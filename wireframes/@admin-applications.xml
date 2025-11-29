@@ -1,0 +1,451 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- 보상금 승인/거부 관리 페이지 -->
+<page name="admin-applications" title="보상금 관리 - SANZERO">
+  <layout type="main">
+    <!-- 페이지 헤더 -->
+    <section class="page-header">
+      <container class="max-w-7xl mx-auto px-4 py-8">
+        <breadcrumb>
+          <link href="/">홈</link>
+          <link href="/admin">관리자</link>
+          <current>보상금 관리</current>
+        </breadcrumb>
+
+        <div class="flex justify-between items-center">
+          <div>
+            <heading level="1" class="text-3xl font-bold text-gray-900 mb-2">
+              보상금 신청 관리
+            </heading>
+            <text class="text-gray-600">
+              제출된 보상금 신청서를 검토하고 승인/거부 처리하세요
+            </text>
+          </div>
+          <actions class="flex space-x-3">
+            <button class="secondary">
+              <icon name="download" class="w-4 h-4 mr-2" />
+              리포트 내보내기
+            </button>
+            <button class="primary">
+              <icon name="filter" class="w-4 h-4 mr-2" />
+              고급 필터
+            </button>
+          </actions>
+        </div>
+      </container>
+    </section>
+
+    <container class="max-w-7xl mx-auto px-4">
+      <!-- 통계 요약 -->
+      <stats-section class="mb-8">
+        <grid class="grid-cols-1 md:grid-cols-5 gap-6">
+          <stat-card class="bg-white rounded-lg shadow border p-6">
+            <stat-header class="flex items-center justify-between">
+              <icon name="file-text" class="w-8 h-8 text-blue-600" />
+            </stat-header>
+            <stat-value class="text-3xl font-bold text-gray-900 mt-4">456</stat-value>
+            <stat-label class="text-gray-600">총 신청서</stat-label>
+          </stat-card>
+
+          <stat-card class="bg-white rounded-lg shadow border p-6">
+            <stat-header class="flex items-center justify-between">
+              <icon name="clock" class="w-8 h-8 text-yellow-600" />
+            </stat-header>
+            <stat-value class="text-3xl font-bold text-gray-900 mt-4">23</stat-value>
+            <stat-label class="text-gray-600">대기 중</stat-label>
+          </stat-card>
+
+          <stat-card class="bg-white rounded-lg shadow border p-6">
+            <stat-header class="flex items-center justify-between">
+              <icon name="check-circle" class="w-8 h-8 text-green-600" />
+            </stat-header>
+            <stat-value class="text-3xl font-bold text-gray-900 mt-4">398</stat-value>
+            <stat-label class="text-gray-600">승인됨</stat-label>
+          </stat-card>
+
+          <stat-card class="bg-white rounded-lg shadow border p-6">
+            <stat-header class="flex items-center justify-between">
+              <icon name="x-circle" class="w-8 h-8 text-red-600" />
+            </stat-header>
+            <stat-value class="text-3xl font-bold text-gray-900 mt-4">35</stat-value>
+            <stat-label class="text-gray-600">거부됨</stat-label>
+          </stat-card>
+
+          <stat-card class="bg-white rounded-lg shadow border p-6">
+            <stat-header class="flex items-center justify-between">
+              <icon name="won" class="w-8 h-8 text-purple-600" />
+            </stat-header>
+            <stat-value class="text-2xl font-bold text-gray-900 mt-4">15.8억</stat-value>
+            <stat-label class="text-gray-600">총 지급액</stat-label>
+          </stat-card>
+        </grid>
+      </stats-section>
+
+      <!-- 필터 및 검색 -->
+      <filters-section class="mb-6">
+        <card class="p-4">
+          <form class="flex flex-wrap gap-4 items-end">
+            <!-- 상태 -->
+            <field>
+              <label class="block text-sm font-medium text-gray-700 mb-1">상태</label>
+              <select name="status" class="border border-gray-300 rounded-md px-3 py-2">
+                <option value="">전체</option>
+                <option value="pending">대기 중</option>
+                <option value="reviewing">검토 중</option>
+                <option value="approved">승인됨</option>
+                <option value="rejected">거부됨</option>
+                <option value="completed">완료됨</option>
+              </select>
+            </field>
+
+            <!-- 우선순위 -->
+            <field>
+              <label class="block text-sm font-medium text-gray-700 mb-1">우선순위</label>
+              <select name="priority" class="border border-gray-300 rounded-md px-3 py-2">
+                <option value="">전체</option>
+                <option value="urgent">긴급</option>
+                <option value="high">높음</option>
+                <option value="normal">보통</option>
+                <option value="low">낮음</option>
+              </select>
+            </field>
+
+            <!-- 보상금 범위 -->
+            <field>
+              <label class="block text-sm font-medium text-gray-700 mb-1">보상금 범위</label>
+              <amount-range class="flex items-center space-x-2">
+                <input name="min_amount" type="number" placeholder="최소" class="border border-gray-300 rounded-md px-3 py-2 w-24" />
+                <span class="text-gray-500">~</span>
+                <input name="max_amount" type="number" placeholder="최대" class="border border-gray-300 rounded-md px-3 py-2 w-24" />
+                <span class="text-sm text-gray-500">만원</span>
+              </amount-range>
+            </field>
+
+            <!-- 신청일 -->
+            <field>
+              <label class="block text-sm font-medium text-gray-700 mb-1">신청일</label>
+              <date-range class="flex items-center space-x-2">
+                <input name="start_date" type="date" class="border border-gray-300 rounded-md px-3 py-2" />
+                <span class="text-gray-500">~</span>
+                <input name="end_date" type="date" class="border border-gray-300 rounded-md px-3 py-2" />
+              </date-range>
+            </field>
+
+            <!-- 검색 -->
+            <field class="flex-1">
+              <label class="block text-sm font-medium text-gray-700 mb-1">검색</label>
+              <search-input name="search" placeholder="신청자명, 신청번호, 부상 유형..." class="w-full border border-gray-300 rounded-md px-3 py-2" />
+            </field>
+
+            <!-- 버튼 -->
+            <field class="flex space-x-2">
+              <button type="submit" class="primary">검색</button>
+              <button type="reset" class="secondary">초기화</button>
+            </field>
+          </form>
+        </card>
+      </filters-section>
+
+      <!-- 신청서 목록 -->
+      <applications-section>
+        <!-- 대기 중인 신청서 -->
+        <section class="mb-8">
+          <section-header class="mb-4">
+            <title class="text-lg font-semibold text-red-600 flex items-center">
+              <icon name="alert-circle" class="w-5 h-5 mr-2" />
+              승인 대기 중 (23건)
+            </title>
+          </section-header>
+
+          <applications-grid class="space-y-4">
+            <application-card class="bg-white rounded-lg shadow border p-6 border-l-4 border-red-500">
+              <card-header class="flex justify-between items-start mb-4">
+                <application-info>
+                  <application-id class="text-sm text-gray-500">APP-2024-001</application-id>
+                  <application-title class="text-lg font-semibold text-gray-900">작업 중 계단에서 미끄러져 발목 부상</application-title>
+                  <applicant-info class="text-sm text-gray-600 mt-1">
+                    신청자: 박○○ • 신청일: 2024.01.20 • 부상: 발목 염좌
+                  </applicant-info>
+                </application-info>
+                <priority-badge class="bg-red-100 text-red-800 px-2 py-1 rounded-full text-xs font-medium">
+                  긴급
+                </priority-badge>
+              </card-header>
+
+              <card-content class="mb-4">
+                <grid class="grid-cols-1 md:grid-cols-3 gap-4">
+                  <info-item>
+                    <label class="text-sm text-gray-500">예상 보상금</label>
+                    <value class="text-lg font-semibold text-purple-600">12,500,000원</value>
+                  </info-item>
+                  <info-item>
+                    <label class="text-sm text-gray-500">AI 승인 확률</label>
+                    <value class="text-lg font-semibold text-green-600">85%</value>
+                  </info-item>
+                  <info-item>
+                    <label class="text-sm text-gray-500">처리 기한</label>
+                    <value class="text-lg font-semibold text-red-600">1일 남음</value>
+                  </info-item>
+                </grid>
+              </card-content>
+
+              <ai-recommendation class="mb-4 p-3 bg-blue-50 rounded-lg border border-blue-200">
+                <recommendation-header class="flex items-center mb-2">
+                  <icon name="brain" class="w-4 h-4 text-blue-600 mr-2" />
+                  <title class="font-medium text-blue-900">AI 추천</title>
+                </recommendation-header>
+                <recommendation-text class="text-sm text-blue-700">
+                  유사 사례 152건 분석 결과 승인을 추천합니다. 업종별 안전 규정 위반이 명확하며, 보상금 산정이 적정 범위 내에 있습니다.
+                </recommendation-text>
+              </ai-recommendation>
+
+              <card-actions class="flex justify-between items-center">
+                <action-buttons class="flex space-x-2">
+                  <button class="bg-green-600 text-white px-4 py-2 rounded-md hover:bg-green-700 flex items-center">
+                    <icon name="check" class="w-4 h-4 mr-2" />
+                    승인
+                  </button>
+                  <button class="bg-red-600 text-white px-4 py-2 rounded-md hover:bg-red-700 flex items-center">
+                    <icon name="x" class="w-4 h-4 mr-2" />
+                    거부
+                  </button>
+                  <button href="/admin/applications/1" class="secondary flex items-center">
+                    <icon name="eye" class="w-4 h-4 mr-2" />
+                    상세 보기
+                  </button>
+                </action-buttons>
+                <processing-time class="text-sm text-gray-500">
+                  접수 후 3일 경과
+                </processing-time>
+              </card-actions>
+            </application-card>
+
+            <application-card class="bg-white rounded-lg shadow border p-6 border-l-4 border-yellow-500">
+              <card-header class="flex justify-between items-start mb-4">
+                <application-info>
+                  <application-id class="text-sm text-gray-500">APP-2024-015</application-id>
+                  <application-title class="text-lg font-semibold text-gray-900">화학물질 노출로 인한 피부염</application-title>
+                  <applicant-info class="text-sm text-gray-600 mt-1">
+                    신청자: 이○○ • 신청일: 2024.01.18 • 부상: 피부염
+                  </applicant-info>
+                </application-info>
+                <priority-badge class="bg-yellow-100 text-yellow-800 px-2 py-1 rounded-full text-xs font-medium">
+                  검토 필요
+                </priority-badge>
+              </card-header>
+
+              <card-content class="mb-4">
+                <grid class="grid-cols-1 md:grid-cols-3 gap-4">
+                  <info-item>
+                    <label class="text-sm text-gray-500">예상 보상금</label>
+                    <value class="text-lg font-semibold text-purple-600">32,000,000원</value>
+                  </info-item>
+                  <info-item>
+                    <label class="text-sm text-gray-500">AI 승인 확률</label>
+                    <value class="text-lg font-semibold text-yellow-600">65%</value>
+                  </info-item>
+                  <info-item>
+                    <label class="text-sm text-gray-500">처리 기한</label>
+                    <value class="text-lg font-semibold text-green-600">5일 남음</value>
+                  </info-item>
+                </grid>
+              </card-content>
+
+              <ai-recommendation class="mb-4 p-3 bg-yellow-50 rounded-lg border border-yellow-200">
+                <recommendation-header class="flex items-center mb-2">
+                  <icon name="alert-triangle" class="w-4 h-4 text-yellow-600 mr-2" />
+                  <title class="font-medium text-yellow-900">AI 주의사항</title>
+                </recommendation-header>
+                <recommendation-text class="text-sm text-yellow-700">
+                  의료 기록이 불완전하며 추가 검증이 필요합니다. 화학물질 노출 정도와 작업환경 안전성에 대한 추가 조사를 권장합니다.
+                </recommendation-text>
+              </ai-recommendation>
+
+              <card-actions class="flex justify-between items-center">
+                <action-buttons class="flex space-x-2">
+                  <button class="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 flex items-center">
+                    <icon name="search" class="w-4 h-4 mr-2" />
+                    추가 조사
+                  </button>
+                  <button href="/admin/applications/15" class="secondary flex items-center">
+                    <icon name="eye" class="w-4 h-4 mr-2" />
+                    상세 보기
+                  </button>
+                </action-buttons>
+                <processing-time class="text-sm text-gray-500">
+                  접수 후 5일 경과
+                </processing-time>
+              </card-actions>
+            </application-card>
+
+            <application-card class="bg-white rounded-lg shadow border p-6 border-l-4 border-blue-500">
+              <card-header class="flex justify-between items-start mb-4">
+                <application-info>
+                  <application-id class="text-sm text-gray-500">APP-2024-025</application-id>
+                  <application-title class="text-lg font-semibold text-gray-900">기계 조작 중 손가락 절단</application-title>
+                  <applicant-info class="text-sm text-gray-600 mt-1">
+                    신청자: 최○○ • 신청일: 2024.01.15 • 부상: 손가락 절단
+                  </applicant-info>
+                </application-info>
+                <priority-badge class="bg-blue-100 text-blue-800 px-2 py-1 rounded-full text-xs font-medium">
+                  일반
+                </priority-badge>
+              </card-header>
+
+              <card-content class="mb-4">
+                <grid class="grid-cols-1 md:grid-cols-3 gap-4">
+                  <info-item>
+                    <label class="text-sm text-gray-500">예상 보상금</label>
+                    <value class="text-lg font-semibold text-purple-600">8,500,000원</value>
+                  </info-item>
+                  <info-item>
+                    <label class="text-sm text-gray-500">AI 승인 확률</label>
+                    <value class="text-lg font-semibold text-green-600">92%</value>
+                  </info-item>
+                  <info-item>
+                    <label class="text-sm text-gray-500">처리 기한</label>
+                    <value class="text-lg font-semibold text-green-600">3일 남음</value>
+                  </info-item>
+                </grid>
+              </card-content>
+
+              <ai-recommendation class="mb-4 p-3 bg-green-50 rounded-lg border border-green-200">
+                <recommendation-header class="flex items-center mb-2">
+                  <icon name="check-circle" class="w-4 h-4 text-green-600 mr-2" />
+                  <title class="font-medium text-green-900">AI 추천</title>
+                </recommendation-header>
+                <recommendation-text class="text-sm text-green-700">
+                  모든 서류가 완비되었으며, 유사 사례와 비교 시 승인 기준을 충족합니다. 즉시 승인 처리를 권장합니다.
+                </recommendation-text>
+              </ai-recommendation>
+
+              <card-actions class="flex justify-between items-center">
+                <action-buttons class="flex space-x-2">
+                  <button class="bg-green-600 text-white px-4 py-2 rounded-md hover:bg-green-700 flex items-center">
+                    <icon name="check" class="w-4 h-4 mr-2" />
+                    승인
+                  </button>
+                  <button class="bg-red-600 text-white px-4 py-2 rounded-md hover:bg-red-700 flex items-center">
+                    <icon name="x" class="w-4 h-4 mr-2" />
+                    거부
+                  </button>
+                  <button href="/admin/applications/25" class="secondary flex items-center">
+                    <icon name="eye" class="w-4 h-4 mr-2" />
+                    상세 보기
+                  </button>
+                </action-buttons>
+                <processing-time class="text-sm text-gray-500">
+                  접수 후 8일 경과
+                </processing-time>
+              </card-actions>
+            </application-card>
+          </applications-grid>
+        </section>
+
+        <!-- 최근 처리된 신청서 -->
+        <section>
+          <section-header class="mb-4">
+            <title class="text-lg font-semibold text-gray-900 flex items-center">
+              <icon name="history" class="w-5 h-5 mr-2" />
+              최근 처리 완료
+            </title>
+          </section-header>
+
+          <recent-applications class="bg-white rounded-lg shadow border">
+            <table class="w-full">
+              <thead class="bg-gray-50 border-b">
+                <tr>
+                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">신청서</th>
+                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">신청자</th>
+                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">보상금</th>
+                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">상태</th>
+                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">처리일</th>
+                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">처리자</th>
+                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">작업</th>
+                </tr>
+              </thead>
+              <tbody class="bg-white divide-y divide-gray-200">
+                <tr class="hover:bg-gray-50">
+                  <td class="px-6 py-4 whitespace-nowrap">
+                    <div>
+                      <div class="text-sm font-medium text-gray-900">APP-2024-120</div>
+                      <div class="text-sm text-gray-500">작업장 낙상 사고</div>
+                    </div>
+                  </td>
+                  <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">김○○</td>
+                  <td class="px-6 py-4 whitespace-nowrap text-sm font-semibold text-purple-600">15,000,000원</td>
+                  <td class="px-6 py-4 whitespace-nowrap">
+                    <span class="px-2 py-1 text-xs font-medium rounded-full bg-green-100 text-green-800">승인됨</span>
+                  </td>
+                  <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">2024.01.22</td>
+                  <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">김관리자</td>
+                  <td class="px-6 py-4 whitespace-nowrap text-sm space-x-2">
+                    <button class="text-blue-600 hover:text-blue-700">보기</button>
+                  </td>
+                </tr>
+
+                <tr class="hover:bg-gray-50">
+                  <td class="px-6 py-4 whitespace-nowrap">
+                    <div>
+                      <div class="text-sm font-medium text-gray-900">APP-2024-118</div>
+                      <div class="text-sm text-gray-500">화학물질 알레르기</div>
+                    </div>
+                  </td>
+                  <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">박○○</td>
+                  <td class="px-6 py-4 whitespace-nowrap text-sm font-semibold text-gray-600">-</td>
+                  <td class="px-6 py-4 whitespace-nowrap">
+                    <span class="px-2 py-1 text-xs font-medium rounded-full bg-red-100 text-red-800">거부됨</span>
+                  </td>
+                  <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">2024.01.21</td>
+                  <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">박관리자</td>
+                  <td class="px-6 py-4 whitespace-nowrap text-sm space-x-2">
+                    <button class="text-blue-600 hover:text-blue-700">보기</button>
+                  </td>
+                </tr>
+
+                <tr class="hover:bg-gray-50">
+                  <td class="px-6 py-4 whitespace-nowrap">
+                    <div>
+                      <div class="text-sm font-medium text-gray-900">APP-2024-115</div>
+                      <div class="text-sm text-gray-500">기계 정비 중 화상</div>
+                    </div>
+                  </td>
+                  <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">이○○</td>
+                  <td class="px-6 py-4 whitespace-nowrap text-sm font-semibold text-purple-600">4,200,000원</td>
+                  <td class="px-6 py-4 whitespace-nowrap">
+                    <span class="px-2 py-1 text-xs font-medium rounded-full bg-green-100 text-green-800">승인됨</span>
+                  </td>
+                  <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">2024.01.20</td>
+                  <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">김관리자</td>
+                  <td class="px-6 py-4 whitespace-nowrap text-sm space-x-2">
+                    <button class="text-blue-600 hover:text-blue-700">보기</button>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </recent-applications>
+        </section>
+      </applications-section>
+
+      <!-- 페이지네이션 -->
+      <pagination class="mt-6 flex items-center justify-between">
+        <page-info class="text-sm text-gray-600">
+          총 456건 중 1-10건 표시
+        </page-info>
+
+        <page-controls class="flex items-center space-x-2">
+          <button class="px-3 py-2 border border-gray-300 rounded-md text-sm text-gray-600 hover:bg-gray-50 disabled:opacity-50" disabled>
+            이전
+          </button>
+          <page-number class="px-3 py-2 bg-primary-600 text-white rounded-md text-sm">1</page-number>
+          <page-number class="px-3 py-2 border border-gray-300 rounded-md text-sm text-gray-600 hover:bg-gray-50">2</page-number>
+          <page-number class="px-3 py-2 border border-gray-300 rounded-md text-sm text-gray-600 hover:bg-gray-50">3</page-number>
+          <span class="px-2 text-gray-500">...</span>
+          <page-number class="px-3 py-2 border border-gray-300 rounded-md text-sm text-gray-600 hover:bg-gray-50">46</page-number>
+          <button class="px-3 py-2 border border-gray-300 rounded-md text-sm text-gray-600 hover:bg-gray-50">
+            다음
+          </button>
+        </page-controls>
+      </pagination>
+    </container>
+  </layout>
+</page>

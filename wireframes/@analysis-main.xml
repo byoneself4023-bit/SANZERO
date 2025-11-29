@@ -1,0 +1,315 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- AI 분석 메인 페이지 -->
+<page name="analysis-main" title="AI 분석 서비스 - SANZERO">
+  <layout type="main">
+    <!-- 페이지 헤더 -->
+    <section class="page-header">
+      <container class="max-w-7xl mx-auto px-4 py-8">
+        <breadcrumb>
+          <link href="/">홈</link>
+          <current>AI 분석</current>
+        </breadcrumb>
+
+        <div class="text-center">
+          <heading level="1" class="text-4xl font-bold text-gray-900 mb-4">
+            AI 기반 분석 서비스
+          </heading>
+          <text class="text-xl text-gray-600 mb-8">
+            인공지능을 활용한 판례 분석과 장애 등급 예측으로 더 정확한 정보를 제공합니다
+          </text>
+        </div>
+      </container>
+    </section>
+
+    <!-- 서비스 카드 -->
+    <section class="services">
+      <container class="max-w-7xl mx-auto px-4">
+        <grid class="grid-cols-1 md:grid-cols-2 gap-8 mb-12">
+          <!-- 판례 분석 카드 -->
+          <card class="service-card" href="/analysis/precedent">
+            <header class="text-center mb-6">
+              <icon name="gavel" class="w-16 h-16 text-blue-600 mx-auto mb-4" />
+              <title class="text-2xl font-bold text-gray-900">판례 분석</title>
+              <description class="text-gray-600">
+                과거 유사 사례를 분석하여 승소 가능성과 예상 보상금을 예측합니다
+              </description>
+            </header>
+
+            <features class="mb-6">
+              <feature-item>
+                <icon name="check" class="text-green-500" />
+                <text>10만+ 판례 데이터 기반 분석</text>
+              </feature-item>
+              <feature-item>
+                <icon name="check" class="text-green-500" />
+                <text>업종별/부상별 특화 분석</text>
+              </feature-item>
+              <feature-item>
+                <icon name="check" class="text-green-500" />
+                <text>승소 확률 95% 정확도</text>
+              </feature-item>
+              <feature-item>
+                <icon name="check" class="text-green-500" />
+                <text>실시간 법령 업데이트 반영</text>
+              </feature-item>
+            </features>
+
+            <button class="primary w-full">
+              판례 분석 시작하기
+            </button>
+
+            <stats class="mt-4 text-center text-sm text-gray-500">
+              이번 달 1,247건 분석 완료
+            </stats>
+          </card>
+
+          <!-- 장애 등급 예측 카드 -->
+          <card class="service-card" href="/analysis/disability">
+            <header class="text-center mb-6">
+              <icon name="medical" class="w-16 h-16 text-purple-600 mx-auto mb-4" />
+              <title class="text-2xl font-bold text-gray-900">장애 등급 예측</title>
+              <description class="text-gray-600">
+                의료 기록을 분석하여 예상 장애 등급과 회복 가능성을 진단합니다
+              </description>
+            </header>
+
+            <features class="mb-6">
+              <feature-item>
+                <icon name="check" class="text-green-500" />
+                <text>의료진 전문 지식 학습</text>
+              </feature-item>
+              <feature-item>
+                <icon name="check" class="text-green-500" />
+                <text>다양한 부상 유형별 분석</text>
+              </feature-item>
+              <feature-item>
+                <icon name="check" class="text-green-500" />
+                <text>회복 기간 예측</text>
+              </feature-item>
+              <feature-item>
+                <icon name="check" class="text-green-500" />
+                <text>추가 검사 필요성 제안</text>
+              </feature-item>
+            </features>
+
+            <button class="primary w-full">
+              장애 등급 예측하기
+            </button>
+
+            <stats class="mt-4 text-center text-sm text-gray-500">
+              이번 달 892건 예측 완료
+            </stats>
+          </card>
+        </grid>
+      </container>
+    </section>
+
+    <!-- 분석 프로세스 -->
+    <section class="process bg-gray-50 py-16">
+      <container class="max-w-7xl mx-auto px-4">
+        <header class="text-center mb-12">
+          <heading level="2" class="text-3xl font-bold text-gray-900 mb-4">
+            AI 분석 프로세스
+          </heading>
+          <text class="text-gray-600">
+            3단계 간단한 과정으로 전문적인 분석 결과를 얻으세요
+          </text>
+        </header>
+
+        <grid class="grid-cols-1 md:grid-cols-3 gap-8">
+          <process-step>
+            <step-number class="bg-blue-600 text-white">1</step-number>
+            <step-title>정보 입력</step-title>
+            <step-description>
+              사고 정보, 의료 기록, 개인 정보를 간단하게 입력합니다
+            </step-description>
+            <step-icon name="edit" class="text-blue-600" />
+          </process-step>
+
+          <process-step>
+            <step-number class="bg-purple-600 text-white">2</step-number>
+            <step-title>AI 분석</step-title>
+            <step-description>
+              고도화된 AI 모델이 수천 건의 데이터를 분석하여 결과를 도출합니다
+            </step-description>
+            <step-icon name="cpu" class="text-purple-600" />
+          </process-step>
+
+          <process-step>
+            <step-number class="bg-green-600 text-white">3</step-number>
+            <step-title>결과 확인</step-title>
+            <step-description>
+              상세한 분석 결과와 함께 실행 가능한 조치 방안을 제공받습니다
+            </step-description>
+            <step-icon name="chart" class="text-green-600" />
+          </process-step>
+        </grid>
+      </container>
+    </section>
+
+    <!-- 최근 분석 결과 -->
+    <section class="recent-analysis py-16">
+      <container class="max-w-7xl mx-auto px-4">
+        <header class="flex justify-between items-center mb-8">
+          <div>
+            <heading level="2" class="text-2xl font-bold text-gray-900 mb-2">
+              최근 분석 결과
+            </heading>
+            <text class="text-gray-600">
+              AI가 분석한 최신 사례들을 확인해보세요
+            </text>
+          </div>
+          <link href="/analysis/history" class="text-primary-600 font-medium">
+            전체 기록 보기
+          </link>
+        </header>
+
+        <conditional condition="user_logged_in">
+          <grid class="grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <analysis-card>
+              <header class="flex justify-between items-start mb-3">
+                <badge class="precedent">판례 분석</badge>
+                <date>2024-01-20</date>
+              </header>
+              <title class="font-semibold mb-2">작업장 낙상 사고</title>
+              <result class="text-sm text-gray-600 mb-3">
+                승소 확률: 92% | 예상 보상금: 1,200만원
+              </result>
+              <button href="/analysis/results/123" class="secondary-outline w-full">
+                상세 보기
+              </button>
+            </analysis-card>
+
+            <analysis-card>
+              <header class="flex justify-between items-start mb-3">
+                <badge class="disability">장애 등급</badge>
+                <date>2024-01-18</date>
+              </header>
+              <title class="font-semibold mb-2">화학물질 노출 피부염</title>
+              <result class="text-sm text-gray-600 mb-3">
+                예상 등급: 6급 | 회복 기간: 12주
+              </result>
+              <button href="/analysis/results/122" class="secondary-outline w-full">
+                상세 보기
+              </button>
+            </analysis-card>
+
+            <analysis-card>
+              <header class="flex justify-between items-start mb-3">
+                <badge class="precedent">판례 분석</badge>
+                <date>2024-01-15</date>
+              </header>
+              <title class="font-semibold mb-2">기계 조작 중 절단</title>
+              <result class="text-sm text-gray-600 mb-3">
+                승소 확률: 98% | 예상 보상금: 3,500만원
+              </result>
+              <button href="/analysis/results/121" class="secondary-outline w-full">
+                상세 보기
+              </button>
+            </analysis-card>
+          </grid>
+        </conditional>
+
+        <conditional condition="user_not_logged_in">
+          <empty-state class="text-center py-12">
+            <icon name="lock" class="w-16 h-16 text-gray-300 mx-auto mb-4" />
+            <title class="text-xl font-semibold text-gray-900 mb-2">
+              로그인이 필요합니다
+            </title>
+            <description class="text-gray-600 mb-6">
+              분석 기록을 확인하려면 로그인해주세요
+            </description>
+            <button href="/auth/login" class="primary">
+              로그인하기
+            </button>
+          </empty-state>
+        </conditional>
+      </container>
+    </section>
+
+    <!-- AI 성능 지표 -->
+    <section class="performance bg-primary-50 py-16">
+      <container class="max-w-7xl mx-auto px-4">
+        <header class="text-center mb-12">
+          <heading level="2" class="text-3xl font-bold text-gray-900 mb-4">
+            AI 성능 지표
+          </heading>
+          <text class="text-gray-600">
+            지속적인 학습과 개선을 통해 더 정확한 분석을 제공합니다
+          </text>
+        </header>
+
+        <grid class="grid-cols-1 md:grid-cols-4 gap-6">
+          <metric-card>
+            <metric-value class="text-3xl font-bold text-primary-600">94.8%</metric-value>
+            <metric-label>판례 분석 정확도</metric-label>
+            <metric-trend class="text-green-600">↑ 2.3%</metric-trend>
+          </metric-card>
+
+          <metric-card>
+            <metric-value class="text-3xl font-bold text-purple-600">89.2%</metric-value>
+            <metric-label>장애 등급 예측 정확도</metric-label>
+            <metric-trend class="text-green-600">↑ 1.8%</metric-trend>
+          </metric-card>
+
+          <metric-card>
+            <metric-value class="text-3xl font-bold text-blue-600">15,000+</metric-value>
+            <metric-label>학습된 판례 수</metric-label>
+            <metric-trend class="text-green-600">↑ 500</metric-trend>
+          </metric-card>
+
+          <metric-card>
+            <metric-value class="text-3xl font-bold text-green-600">2.3초</metric-value>
+            <metric-label>평균 분석 시간</metric-label>
+            <metric-trend class="text-green-600">↓ 0.5초</metric-trend>
+          </metric-card>
+        </grid>
+      </container>
+    </section>
+
+    <!-- FAQ -->
+    <section class="faq py-16">
+      <container class="max-w-4xl mx-auto px-4">
+        <header class="text-center mb-12">
+          <heading level="2" class="text-3xl font-bold text-gray-900 mb-4">
+            자주 묻는 질문
+          </heading>
+        </header>
+
+        <faq-list>
+          <faq-item>
+            <question>AI 분석 결과는 얼마나 정확한가요?</question>
+            <answer>
+              판례 분석은 94.8%, 장애 등급 예측은 89.2%의 정확도를 보이고 있습니다.
+              지속적인 데이터 학습을 통해 정확도를 개선하고 있습니다.
+            </answer>
+          </faq-item>
+
+          <faq-item>
+            <question>분석에 소요되는 시간은 얼마나 되나요?</question>
+            <answer>
+              대부분의 분석은 2-3초 내에 완료됩니다. 복잡한 케이스의 경우
+              최대 10초까지 소요될 수 있습니다.
+            </answer>
+          </faq-item>
+
+          <faq-item>
+            <question>분석 결과를 법적 근거로 사용할 수 있나요?</question>
+            <answer>
+              AI 분석 결과는 참고 자료로만 활용하시기 바랍니다.
+              정확한 법적 판단은 전문 노무사와 상담을 받으시기를 권장합니다.
+            </answer>
+          </faq-item>
+
+          <faq-item>
+            <question>개인정보는 어떻게 보호되나요?</question>
+            <answer>
+              모든 개인정보는 암호화되어 저장되며, 분석 목적으로만 사용됩니다.
+              제3자에게 제공되지 않으며, 사용자가 삭제 요청 시 즉시 삭제됩니다.
+            </answer>
+          </faq-item>
+        </faq-list>
+      </container>
+    </section>
+  </layout>
+</page>

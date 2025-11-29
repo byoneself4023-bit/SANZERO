@@ -1,0 +1,284 @@
+{% extends "base.html" %}
+
+{% block title %}프로필 관리 - SANZERO{% endblock %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <!-- 페이지 헤더 -->
+    <div class="mb-8">
+        <h1 class="text-3xl font-bold text-gray-900">프로필 관리</h1>
+        <p class="mt-2 text-gray-600">개인정보를 관리하고 계정 설정을 변경하세요</p>
+    </div>
+
+    <!-- 성공 메시지 -->
+    {% if request.query_params.get('updated') == 'true' %}
+    <div class="mb-6 bg-green-50 border border-green-200 rounded-md p-4">
+        <div class="flex">
+            <div class="flex-shrink-0">
+                <svg class="h-5 w-5 text-green-400" viewBox="0 0 20 20" fill="currentColor">
+                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
+                </svg>
+            </div>
+            <div class="ml-3">
+                <p class="text-sm text-green-800">프로필이 성공적으로 업데이트되었습니다.</p>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <!-- 사이드바 -->
+        <div class="lg:col-span-1">
+            <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+                <!-- 프로필 요약 -->
+                <div class="text-center mb-6">
+                    <div class="mx-auto h-20 w-20 bg-primary-100 rounded-full flex items-center justify-center mb-4">
+                        <span class="text-2xl font-bold text-primary-600">
+                            {{ current_user.username[0].upper() }}
+                        </span>
+                    </div>
+                    <h3 class="text-lg font-medium text-gray-900">{{ current_user.username }}</h3>
+                    <p class="text-sm text-gray-500">{{ current_user.email }}</p>
+                    <span class="inline-block mt-2 px-3 py-1 text-xs font-medium rounded-full
+                        {% if current_user.user_type == 'admin' %}bg-red-100 text-red-800
+                        {% elif current_user.user_type == 'lawyer' %}bg-blue-100 text-blue-800
+                        {% else %}bg-green-100 text-green-800{% endif %}">
+                        {% if current_user.user_type == 'admin' %}관리자
+                        {% elif current_user.user_type == 'lawyer' %}노무사
+                        {% else %}일반 사용자{% endif %}
+                    </span>
+                </div>
+
+                <!-- 메뉴 -->
+                <nav class="space-y-2">
+                    <a href="#basic-info" class="flex items-center px-3 py-2 text-sm font-medium text-gray-700 bg-gray-100 rounded-lg">
+                        <svg class="w-4 h-4 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
+                        </svg>
+                        기본 정보
+                    </a>
+                    <a href="#security" class="flex items-center px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100 rounded-lg">
+                        <svg class="w-4 h-4 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path>
+                        </svg>
+                        보안 설정
+                    </a>
+                    <a href="#notifications" class="flex items-center px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100 rounded-lg">
+                        <svg class="w-4 h-4 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-5-5V9a6 6 0 10-12 0v3l-5 5h5m7 0v1a3 3 0 11-6 0v-1m6 0H9"></path>
+                        </svg>
+                        알림 설정
+                    </a>
+                </nav>
+            </div>
+        </div>
+
+        <!-- 메인 콘텐츠 -->
+        <div class="lg:col-span-2">
+            <!-- 기본 정보 섹션 -->
+            <div id="basic-info" class="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-8">
+                <h2 class="text-lg font-medium text-gray-900 mb-6">기본 정보</h2>
+
+                <form action="/auth/profile/form" method="POST" onsubmit="handleFormSubmit(this)">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+
+                    <div class="grid grid-cols-1 gap-6 sm:grid-cols-2">
+                        <!-- 사용자명 -->
+                        <div>
+                            <label for="username" class="block text-sm font-medium text-gray-700">사용자명</label>
+                            <input
+                                type="text"
+                                name="username"
+                                id="username"
+                                required
+                                class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500 sm:text-sm"
+                                value="{{ user_data.username if user_data else current_user.username }}">
+                        </div>
+
+                        <!-- 전화번호 -->
+                        <div>
+                            <label for="phone" class="block text-sm font-medium text-gray-700">전화번호</label>
+                            <input
+                                type="tel"
+                                name="phone"
+                                id="phone"
+                                class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500 sm:text-sm"
+                                value="{{ user_data.phone if user_data and user_data.phone else '' }}">
+                        </div>
+
+                        <!-- 생년월일 -->
+                        <div>
+                            <label for="birth_date" class="block text-sm font-medium text-gray-700">생년월일</label>
+                            <input
+                                type="date"
+                                name="birth_date"
+                                id="birth_date"
+                                class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500 sm:text-sm"
+                                value="{{ user_data.birth_date if user_data and user_data.birth_date else '' }}">
+                        </div>
+
+                        <!-- 성별 -->
+                        <div>
+                            <label for="gender" class="block text-sm font-medium text-gray-700">성별</label>
+                            <select
+                                name="gender"
+                                id="gender"
+                                class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500 sm:text-sm">
+                                <option value="">선택하지 않음</option>
+                                <option value="male" {% if user_data and user_data.gender == 'male' %}selected{% endif %}>남성</option>
+                                <option value="female" {% if user_data and user_data.gender == 'female' %}selected{% endif %}>여성</option>
+                                <option value="other" {% if user_data and user_data.gender == 'other' %}selected{% endif %}>기타</option>
+                            </select>
+                        </div>
+
+                        <!-- 업종 코드 -->
+                        <div>
+                            <label for="industry_code" class="block text-sm font-medium text-gray-700">업종 코드</label>
+                            <input
+                                type="text"
+                                name="industry_code"
+                                id="industry_code"
+                                placeholder="예: 62 (정보통신업)"
+                                class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500 sm:text-sm"
+                                value="{{ user_data.industry_code if user_data and user_data.industry_code else '' }}">
+                        </div>
+
+                        <!-- 직업/직책 -->
+                        <div>
+                            <label for="job_title" class="block text-sm font-medium text-gray-700">직업/직책</label>
+                            <input
+                                type="text"
+                                name="job_title"
+                                id="job_title"
+                                placeholder="예: 개발자, 디자이너"
+                                class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500 sm:text-sm"
+                                value="{{ user_data.job_title if user_data and user_data.job_title else '' }}">
+                        </div>
+                    </div>
+
+                    <!-- 주소 -->
+                    <div class="mt-6">
+                        <label for="address" class="block text-sm font-medium text-gray-700">주소</label>
+                        <textarea
+                            name="address"
+                            id="address"
+                            rows="3"
+                            class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500 sm:text-sm"
+                            placeholder="주소를 입력하세요">{{ user_data.address if user_data and user_data.address else '' }}</textarea>
+                    </div>
+
+                    <!-- 에러 메시지 -->
+                    {% if error %}
+                    <div class="mt-6 bg-red-50 border border-red-200 rounded-md p-4">
+                        <div class="flex">
+                            <div class="flex-shrink-0">
+                                <svg class="h-5 w-5 text-red-400" viewBox="0 0 20 20" fill="currentColor">
+                                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"></path>
+                                </svg>
+                            </div>
+                            <div class="ml-3">
+                                <p class="text-sm text-red-800">{{ error }}</p>
+                            </div>
+                        </div>
+                    </div>
+                    {% endif %}
+
+                    <!-- 저장 버튼 -->
+                    <div class="mt-6 flex justify-end space-x-3">
+                        <button
+                            type="button"
+                            class="px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500">
+                            취소
+                        </button>
+                        <button
+                            type="submit"
+                            class="px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 disabled:opacity-50">
+                            저장하기
+                        </button>
+                    </div>
+                </form>
+            </div>
+
+            <!-- 보안 설정 섹션 -->
+            <div id="security" class="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-8">
+                <h2 class="text-lg font-medium text-gray-900 mb-6">보안 설정</h2>
+
+                <div class="space-y-6">
+                    <!-- 이메일 -->
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <h3 class="text-sm font-medium text-gray-900">이메일 주소</h3>
+                            <p class="text-sm text-gray-500">{{ current_user.email }}</p>
+                        </div>
+                        <button class="text-sm text-primary-600 hover:text-primary-500 font-medium">
+                            변경
+                        </button>
+                    </div>
+
+                    <!-- 비밀번호 -->
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <h3 class="text-sm font-medium text-gray-900">비밀번호</h3>
+                            <p class="text-sm text-gray-500">마지막 변경: 30일 전</p>
+                        </div>
+                        <button class="text-sm text-primary-600 hover:text-primary-500 font-medium">
+                            변경
+                        </button>
+                    </div>
+
+                    <!-- 2단계 인증 -->
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <h3 class="text-sm font-medium text-gray-900">2단계 인증</h3>
+                            <p class="text-sm text-gray-500">보안을 강화하기 위해 2단계 인증을 설정하세요</p>
+                        </div>
+                        <button class="text-sm text-primary-600 hover:text-primary-500 font-medium">
+                            설정
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 알림 설정 섹션 -->
+            <div id="notifications" class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+                <h2 class="text-lg font-medium text-gray-900 mb-6">알림 설정</h2>
+
+                <div class="space-y-4">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <h3 class="text-sm font-medium text-gray-900">이메일 알림</h3>
+                            <p class="text-sm text-gray-500">보상금 신청 상태 변경 시 이메일로 알림</p>
+                        </div>
+                        <label class="relative inline-flex items-center cursor-pointer">
+                            <input type="checkbox" checked class="sr-only peer">
+                            <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-primary-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary-600"></div>
+                        </label>
+                    </div>
+
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <h3 class="text-sm font-medium text-gray-900">SMS 알림</h3>
+                            <p class="text-sm text-gray-500">중요한 알림을 SMS로 받기</p>
+                        </div>
+                        <label class="relative inline-flex items-center cursor-pointer">
+                            <input type="checkbox" class="sr-only peer">
+                            <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-primary-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary-600"></div>
+                        </label>
+                    </div>
+
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <h3 class="text-sm font-medium text-gray-900">상담 예약 알림</h3>
+                            <p class="text-sm text-gray-500">노무사 상담 예약 확정 시 알림</p>
+                        </div>
+                        <label class="relative inline-flex items-center cursor-pointer">
+                            <input type="checkbox" checked class="sr-only peer">
+                            <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-primary-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary-600"></div>
+                        </label>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

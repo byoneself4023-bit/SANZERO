@@ -1,0 +1,41 @@
+# SANZERO Docker Compose 설정
+
+services:
+  # Nginx 리버스 프록시
+  nginx:
+    image: nginx:alpine
+    container_name: sanzero-nginx
+    ports:
+      - "80:80"
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro
+    depends_on:
+      - web
+    restart: unless-stopped
+
+  # FastAPI 웹 애플리케이션
+  web:
+    build: .
+    container_name: sanzero-web
+    ports:
+      - "8000:8000"
+    env_file:
+      - .env
+    volumes:
+      - .:/app
+      - /app/__pycache__
+    restart: unless-stopped
+    dns:
+      - 8.8.8.8
+      - 8.8.4.4
+      - 1.1.1.1
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+networks:
+  default:
+    driver: bridge

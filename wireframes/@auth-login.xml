@@ -1,0 +1,150 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- 로그인 페이지 -->
+<page name="auth-login" title="로그인 - SANZERO">
+  <layout type="auth">
+    <container class="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
+      <card class="max-w-md w-full space-y-8 bg-white p-8 rounded-lg shadow-md">
+        <!-- 로고 및 헤더 -->
+        <header class="text-center">
+          <logo class="mx-auto flex items-center justify-center">
+            <icon name="shield-check" class="w-12 h-12 text-primary-600" />
+          </logo>
+          <heading level="1" class="mt-4 text-3xl font-bold text-gray-900">
+            SANZERO
+          </heading>
+          <text class="mt-2 text-sm text-gray-600">
+            산업재해 보상 서비스에 로그인하세요
+          </text>
+        </header>
+
+        <!-- 로그인 폼 -->
+        <form action="/auth/login/form" method="POST" class="mt-8 space-y-6">
+          <input type="hidden" name="csrf_token" value="{csrf_token}" />
+
+          <!-- 이메일 입력 -->
+          <field>
+            <label class="sr-only">이메일 주소</label>
+            <input
+              name="email"
+              type="email"
+              autocomplete="email"
+              required
+              class="relative block w-full px-3 py-2 border border-gray-300 rounded-md placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-primary-500 focus:border-primary-500 focus:z-10"
+              placeholder="이메일 주소"
+            />
+          </field>
+
+          <!-- 비밀번호 입력 -->
+          <field>
+            <label class="sr-only">비밀번호</label>
+            <input
+              name="password"
+              type="password"
+              autocomplete="current-password"
+              required
+              class="relative block w-full px-3 py-2 border border-gray-300 rounded-md placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-primary-500 focus:border-primary-500 focus:z-10"
+              placeholder="비밀번호"
+            />
+          </field>
+
+          <!-- 옵션 -->
+          <options class="flex items-center justify-between">
+            <remember-me class="flex items-center">
+              <input
+                name="remember_me"
+                type="checkbox"
+                class="h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300 rounded"
+              />
+              <label class="ml-2 block text-sm text-gray-900">
+                로그인 상태 유지
+              </label>
+            </remember-me>
+
+            <forgot-password>
+              <link href="/auth/forgot-password" class="text-sm text-primary-600 hover:text-primary-500">
+                비밀번호를 잊으셨나요?
+              </link>
+            </forgot-password>
+          </options>
+
+          <!-- 에러 메시지 -->
+          <conditional condition="error_message">
+            <error-alert class="rounded-md bg-red-50 p-4">
+              <error-content class="flex">
+                <icon name="x-circle" class="h-5 w-5 text-red-400" />
+                <error-text class="ml-3 text-sm text-red-700">
+                  {error_message}
+                </error-text>
+              </error-content>
+            </error-alert>
+          </conditional>
+
+          <!-- 로그인 버튼 -->
+          <form-action>
+            <button
+              type="submit"
+              class="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500"
+            >
+              <span class="absolute left-0 inset-y-0 flex items-center pl-3">
+                <icon name="lock" class="h-5 w-5 text-primary-500 group-hover:text-primary-400" />
+              </span>
+              로그인
+            </button>
+          </form-action>
+        </form>
+
+        <!-- 회원가입 링크 -->
+        <signup-link class="text-center">
+          <text class="text-sm text-gray-600">
+            계정이 없으신가요?
+            <link href="/auth/signup" class="font-medium text-primary-600 hover:text-primary-500">
+              회원가입
+            </link>
+          </text>
+        </signup-link>
+
+        <!-- 소셜 로그인 (선택사항) -->
+        <social-login class="mt-6">
+          <divider class="relative">
+            <div class="absolute inset-0 flex items-center">
+              <div class="w-full border-t border-gray-300" />
+            </div>
+            <div class="relative flex justify-center text-sm">
+              <span class="px-2 bg-white text-gray-500">또는</span>
+            </div>
+          </divider>
+
+          <social-buttons class="mt-6 grid grid-cols-1 gap-3">
+            <button
+              type="button"
+              class="w-full inline-flex justify-center py-2 px-4 border border-gray-300 rounded-md shadow-sm bg-white text-sm font-medium text-gray-500 hover:bg-gray-50"
+            >
+              <icon name="google" class="h-5 w-5 text-red-500" />
+              <span class="ml-2">Google로 로그인</span>
+            </button>
+
+            <button
+              type="button"
+              class="w-full inline-flex justify-center py-2 px-4 border border-gray-300 rounded-md shadow-sm bg-white text-sm font-medium text-gray-500 hover:bg-gray-50"
+            >
+              <icon name="kakao" class="h-5 w-5 text-yellow-500" />
+              <span class="ml-2">카카오로 로그인</span>
+            </button>
+          </social-buttons>
+        </social-login>
+
+        <!-- 테스트 계정 안내 (개발용) -->
+        <conditional condition="development_mode">
+          <test-accounts class="mt-6 p-4 bg-blue-50 rounded-md">
+            <title class="text-sm font-medium text-blue-900 mb-2">테스트 계정</title>
+            <account-list class="text-xs text-blue-700 space-y-1">
+              <account>관리자: byoneself4023@ajou.ac.kr / rlarlduf0</account>
+              <account>일반사용자: testuser@example.com / test123</account>
+              <account>노무사: lawyer@example.com / lawyer123</account>
+            </account-list>
+          </test-accounts>
+        </conditional>
+      </card>
+    </container>
+  </layout>
+</page>

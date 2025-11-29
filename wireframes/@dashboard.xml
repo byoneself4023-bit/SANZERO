@@ -1,0 +1,169 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- SANZERO 메인 대시보드 -->
+<page name="dashboard" title="SANZERO - 산업재해 보상 서비스 대시보드">
+  <layout type="main">
+    <!-- 페이지 헤더 -->
+    <section class="header-section">
+      <container class="max-w-7xl mx-auto px-4 py-8">
+        <heading level="1" class="text-3xl font-bold text-gray-900 mb-2">
+          안녕하세요! SANZERO에 오신 것을 환영합니다
+        </heading>
+        <text class="text-lg text-gray-600">
+          AI 기반 산업재해 보상 서비스로 정당한 보상을 받아보세요
+        </text>
+      </container>
+    </section>
+
+    <!-- 빠른 액션 카드 -->
+    <section class="quick-actions">
+      <container class="max-w-7xl mx-auto px-4">
+        <grid class="grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+          <card class="action-card" href="/compensation/apply">
+            <icon name="document" class="primary-600" />
+            <title>보상금 신청</title>
+            <description>산업재해 보상금을 간편하게 신청하세요</description>
+            <button class="primary">신청하기</button>
+          </card>
+
+          <card class="action-card" href="/analysis">
+            <icon name="bulb" class="purple-600" />
+            <title>AI 분석</title>
+            <description>판례 분석과 장애 등급 예측을 받아보세요</description>
+            <button class="purple">분석 시작</button>
+          </card>
+
+          <card class="action-card" href="/lawyers">
+            <icon name="users" class="green-600" />
+            <title>노무사 상담</title>
+            <description>전문 노무사와 1:1 상담을 예약하세요</description>
+            <button class="green">상담 예약</button>
+          </card>
+
+          <card class="action-card" href="/chat">
+            <icon name="chat" class="blue-600" />
+            <title>AI 챗봇</title>
+            <description>궁금한 것이 있으면 AI에게 물어보세요</description>
+            <button class="blue">채팅 시작</button>
+          </card>
+        </grid>
+      </container>
+    </section>
+
+    <!-- 통계 대시보드 -->
+    <section class="dashboard-content">
+      <container class="max-w-7xl mx-auto px-4">
+        <grid class="grid-cols-1 lg:grid-cols-3 gap-6">
+          <!-- 최근 활동 -->
+          <card class="col-span-2">
+            <header class="flex items-center justify-between mb-6">
+              <title class="text-lg font-semibold">최근 활동</title>
+              <link href="/compensation/status">전체 보기</link>
+            </header>
+
+            <conditional condition="user_logged_in">
+              <activity-list>
+                <activity-item>
+                  <icon name="calendar" class="primary-600" />
+                  <content>
+                    <title>보상금 신청</title>
+                    <description>새로운 신청서를 작성해보세요</description>
+                  </content>
+                  <status>대기 중</status>
+                </activity-item>
+
+                <activity-item>
+                  <icon name="check" class="green-600" />
+                  <content>
+                    <title>계정 설정 완료</title>
+                    <description>프로필이 성공적으로 설정되었습니다</description>
+                  </content>
+                  <status>완료</status>
+                </activity-item>
+              </activity-list>
+            </conditional>
+
+            <conditional condition="user_not_logged_in">
+              <empty-state>
+                <icon name="user" class="gray-300" />
+                <title>로그인이 필요합니다</title>
+                <description>최근 활동을 확인하려면 로그인해주세요</description>
+                <button href="/auth/login" class="primary">로그인하기</button>
+              </empty-state>
+            </conditional>
+          </card>
+
+          <!-- 도움말 및 가이드 -->
+          <card>
+            <title class="text-lg font-semibold mb-6">도움말 & 가이드</title>
+            <navigation class="space-y-4">
+              <nav-item href="/help/guide">
+                <icon name="question" class="blue-600" />
+                <content>
+                  <title>이용 가이드</title>
+                  <description>처음 사용법 안내</description>
+                </content>
+              </nav-item>
+
+              <nav-item href="/help/faq">
+                <icon name="warning" class="yellow-600" />
+                <content>
+                  <title>자주 묻는 질문</title>
+                  <description>궁금한 것들 모음</description>
+                </content>
+              </nav-item>
+
+              <nav-item href="/help/contact">
+                <icon name="phone" class="green-600" />
+                <content>
+                  <title>고객지원</title>
+                  <description>1:1 문의하기</description>
+                </content>
+              </nav-item>
+            </navigation>
+          </card>
+        </grid>
+      </container>
+    </section>
+
+    <!-- 공지사항 -->
+    <section class="notices">
+      <container class="max-w-7xl mx-auto px-4">
+        <card>
+          <header class="flex items-center justify-between mb-6">
+            <title class="text-lg font-semibold">공지사항</title>
+            <link href="/notices">전체 보기</link>
+          </header>
+
+          <notice-list class="space-y-4">
+            <notice-item class="important">
+              <badge class="red">중요</badge>
+              <content>
+                <title>SANZERO 서비스 정식 출시</title>
+                <description>AI 기반 산업재해 보상 서비스가 정식으로 오픈했습니다.</description>
+              </content>
+              <date>2024.01.15</date>
+            </notice-item>
+
+            <notice-item>
+              <badge class="blue">업데이트</badge>
+              <content>
+                <title>AI 분석 기능 향상</title>
+                <description>판례 분석 정확도가 더욱 개선되었습니다.</description>
+              </content>
+              <date>2024.01.10</date>
+            </notice-item>
+
+            <notice-item>
+              <badge class="green">안내</badge>
+              <content>
+                <title>24시간 고객지원 서비스 시작</title>
+                <description>이제 언제든지 문의사항을 남겨주세요.</description>
+              </content>
+              <date>2024.01.05</date>
+            </notice-item>
+          </notice-list>
+        </card>
+      </container>
+    </section>
+  </layout>
+</page>

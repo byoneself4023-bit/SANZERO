@@ -1,0 +1,1898 @@
+{% extends "base.html" %}
+
+{% block title %}유사 판례 검색 - SANZERO{% endblock %}
+
+{% block head %}{% endblock %}
+
+{% block content %}
+<!-- 페이지 헤더 -->
+<section class="bg-white border-b">
+  <div class="max-w-7xl mx-auto px-4 py-8">
+    <!-- Breadcrumb -->
+    <nav class="flex mb-4" aria-label="Breadcrumb">
+      <ol class="inline-flex items-center space-x-1 md:space-x-3">
+        <li class="inline-flex items-center">
+          <a href="/" class="text-gray-700 hover:text-blue-600">홈</a>
+        </li>
+        <li>
+          <div class="flex items-center">
+            <svg class="w-6 h-6 text-gray-400" fill="currentColor" viewBox="0 0 20 20">
+              <path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd"></path>
+            </svg>
+            <span class="text-gray-500">유사 판례 검색</span>
+          </div>
+        </li>
+      </ol>
+    </nav>
+
+    <h1 class="text-3xl font-bold text-gray-900 mb-2">유사 판례 검색</h1>
+    <p class="text-gray-600">귀하의 산업재해 사건과 유사한 판례를 찾아 인정 비율을 분석해보세요</p>
+  </div>
+</section>
+
+<div class="max-w-7xl mx-auto px-4 py-8">
+
+    <div class="grid lg:grid-cols-3 gap-8">
+        <!-- 메인 검색 영역 -->
+        <div class="lg:col-span-2">
+            <!-- 판례 검색 폼 -->
+            <div class="bg-white rounded-lg shadow-lg p-6 mb-6 border border-gray-200">
+                <h2 class="text-xl font-bold text-gray-900 mb-4">🔍 검색</h2>
+                <p class="text-sm text-blue-600 mb-4 font-medium">
+                    ✅ AI 기반 유사도 분석으로 관련성 높은 판례를 정확하게 검색
+                </p>
+
+                <div class="mb-4">
+                    <label for="simple_query" class="block text-sm font-medium text-gray-700 mb-2">
+                        검색어 입력
+                    </label>
+                    <textarea
+                        id="simple_query"
+                        rows="3"
+                        class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 validation-input"
+                        placeholder="예: 작업 중 프레스 기계에 손가락 끼임으로 인한 절단 사고"
+                        oninput="validateSearchQuery(this.value)"
+                        onblur="validateSearchQuery(this.value)"
+                    ></textarea>
+
+                    <!-- 실시간 검증 메시지 -->
+                    <div id="query-validation-message" class="mt-2 text-sm hidden">
+                        <div id="query-validation-content" class="flex items-start space-x-2">
+                            <span id="query-validation-icon"></span>
+                            <div>
+                                <div id="query-validation-text"></div>
+                                <div id="query-validation-examples" class="mt-2 text-xs hidden">
+                                    <p class="font-medium mb-1">올바른 예시:</p>
+                                    <ul class="space-y-1 pl-3">
+                                        <li>• 작업 중 프레스 기계에 손가락 끼임으로 인한 절단 사고</li>
+                                        <li>• 건설현장 비계 추락사고로 인한 골절상</li>
+                                        <li>• 용접 작업 중 화상 부상</li>
+                                        <li>• 크레인 작업 중 충돌 사고</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="flex space-x-4 mb-4">
+                    <div>
+                        <label for="result_count" class="block text-sm font-medium text-gray-700 mb-1">결과 수</label>
+                        <select id="result_count" class="border border-gray-300 rounded px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                            <option value="5">5개</option>
+                            <option value="10" selected>10개</option>
+                            <option value="15">15개</option>
+                            <option value="20">20개</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="flex">
+                    <button
+                        onclick="performSimpleSearch()"
+                        class="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-8 rounded-lg transition duration-200 w-full disabled:bg-gray-400 disabled:cursor-not-allowed focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+                        id="searchButton"
+                        disabled
+                    >
+                        🔍 판례 검색
+                    </button>
+                </div>
+                <div id="search-disabled-message" class="mt-2 text-sm text-gray-500 text-center">
+                    올바른 검색어를 입력해주세요
+                </div>
+            </div>
+
+            <!-- 검색 상태 표시 -->
+            <div id="search-status" class="hidden mb-6">
+                <div class="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                    <div class="flex items-center">
+                        <div class="animate-spin rounded-full h-5 w-5 border-b-2 border-blue-500 mr-3"></div>
+                        <span class="text-blue-700">검색 중...</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 검색 결과 영역 -->
+            <div id="search-results" class="hidden">
+                <div class="bg-white rounded-lg shadow-lg p-6">
+                    <div class="flex justify-between items-center mb-4">
+                        <h3 class="text-lg font-bold text-gray-900">검색 결과</h3>
+                        <!-- 레포트 저장 버튼 -->
+                        <button
+                            id="save-report-btn"
+                            onclick="generatePrecedentReport()"
+                            class="hidden bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-lg transition-colors duration-200 flex items-center space-x-2"
+                            disabled
+                        >
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                            </svg>
+                            <span>텍스트 레포트 저장</span>
+                        </button>
+                    </div>
+                    <div id="results-container"></div>
+                </div>
+            </div>
+
+            <!-- 에러 표시 영역 -->
+            <div id="error-container" class="hidden">
+                <div class="bg-red-50 border border-red-200 rounded-lg p-4">
+                    <div class="flex">
+                        <svg class="w-5 h-5 text-red-400 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd"></path>
+                        </svg>
+                        <div>
+                            <h4 class="text-red-800 font-medium">검색 오류</h4>
+                            <p class="text-red-700" id="error-message"></p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 사이드바 -->
+        <div>
+            <!-- 검색 결과 통계 차트 -->
+            <div id="statistics-section" class="hidden space-y-6 mb-6">
+                <!-- 종합 분석 요약 -->
+                <div class="bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-lg p-4">
+                    <h4 class="text-md font-semibold text-blue-900 mb-3">🎯 종합 분석</h4>
+                    <div id="comprehensive-analysis" class="text-blue-800 space-y-1 text-sm"></div>
+                </div>
+
+
+                <!-- 상위 3개 판례 상세 비교표 -->
+                <div class="bg-white border border-gray-200 rounded-lg p-4">
+                    <h4 class="text-md font-semibold text-gray-900 mb-3">🏆 상위 3개 판례 비교</h4>
+                    <div id="top3-comparison" class="text-sm"></div>
+                </div>
+
+                <!-- 유불리 분석 통계 -->
+                <div class="bg-white rounded-lg shadow-lg p-4">
+                    <h4 class="text-md font-semibold text-gray-900 mb-3">📊 유사 판례 유불리 분석</h4>
+                    <div class="mb-3" style="height: 200px;">
+                        <canvas id="outcomeChart"></canvas>
+                    </div>
+                    <div id="outcome-summary" class="text-xs text-gray-600"></div>
+                </div>
+
+                <!-- 사고유형별 분포 -->
+                <div class="bg-white rounded-lg shadow-lg p-4">
+                    <h4 class="text-md font-semibold text-gray-900 mb-3">🏭 사고유형</h4>
+                    <div class="mb-3" style="height: 200px;">
+                        <canvas id="categoryChart"></canvas>
+                    </div>
+                    <div id="category-summary" class="text-xs text-gray-600"></div>
+                </div>
+
+            </div>
+
+            <!-- 다음 단계 진행 버튼 -->
+            <div id="next-step-section" class="hidden bg-gradient-to-r from-green-50 to-emerald-50 border-2 border-green-200 rounded-lg p-6 mb-6">
+                <div class="text-center">
+                    <h3 class="text-lg font-semibold text-green-800 mb-2">🎯 분석 완료!</h3>
+                    <p class="text-green-700 mb-4">판례 분석이 완료되었습니다. 다음 단계로 진행하세요.</p>
+                    <div class="flex justify-center">
+                        <button onclick="goToDisabilityPrediction()"
+                                class="px-6 py-3 bg-green-600 hover:bg-green-700 text-white font-medium rounded-lg shadow-lg transition-all duration-200 flex items-center justify-center">
+                            <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                            </svg>
+                            장해등급 예측
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 서비스 정보 -->
+            <div class="bg-blue-50 border border-blue-200 rounded-lg p-6 mb-6">
+                <h3 class="text-lg font-semibold text-blue-800 mb-3">🎯 검색 특징</h3>
+                <ul class="text-blue-700 space-y-2 text-sm">
+                    <li>✅ AI 기반 정확한 유사도 분석</li>
+                    <li>✅ 인정 비율 높은 사례 우선</li>
+                    <li>✅ 관련성 높은 판례만 선별</li>
+                    <li>✅ 실제 보상 결과 포함</li>
+                    <li>✅ 빠른 검색 속도 (평균 3초)</li>
+                </ul>
+            </div>
+
+            <!-- 최근 검색어 예시 -->
+            <div class="bg-white border border-gray-200 rounded-lg p-6">
+                <h3 class="text-lg font-semibold text-gray-900 mb-3">💡 추천 검색어</h3>
+                <div class="space-y-2">
+                    <button
+                        onclick="setQuery('작업 중 프레스 기계에 손가락 끼임')"
+                        class="block w-full text-left text-sm text-gray-600 hover:text-blue-600 hover:bg-blue-50 p-2 rounded transition-colors duration-200"
+                    >
+                        작업 중 프레스 기계에 손가락 끼임
+                    </button>
+                    <button
+                        onclick="setQuery('건설현장 비계 추락 사고')"
+                        class="block w-full text-left text-sm text-gray-600 hover:text-blue-600 hover:bg-blue-50 p-2 rounded transition-colors duration-200"
+                    >
+                        건설현장 비계 추락 사고
+                    </button>
+                    <button
+                        onclick="setQuery('용접 작업 중 화상 부상')"
+                        class="block w-full text-left text-sm text-gray-600 hover:text-blue-600 hover:bg-blue-50 p-2 rounded transition-colors duration-200"
+                    >
+                        용접 작업 중 화상 부상
+                    </button>
+                    <button
+                        onclick="setQuery('크레인 작업 중 충돌 사고')"
+                        class="block w-full text-left text-sm text-gray-600 hover:text-blue-600 hover:bg-blue-50 p-2 rounded transition-colors duration-200"
+                    >
+                        크레인 작업 중 충돌 사고
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// ============================================================================
+// 🚀 판례 검색 JavaScript Functions
+// ============================================================================
+
+// ============================================================================
+// 🔍 실시간 입력 검증 Functions
+// ============================================================================
+
+function validateSearchQuery(query) {
+    const messageElement = document.getElementById('query-validation-message');
+    const iconElement = document.getElementById('query-validation-icon');
+    const textElement = document.getElementById('query-validation-text');
+    const examplesElement = document.getElementById('query-validation-examples');
+    const inputElement = document.getElementById('simple_query');
+    const buttonElement = document.getElementById('searchButton');
+    const disabledMessageElement = document.getElementById('search-disabled-message');
+
+    // 검증 초기화
+    let isValid = false;
+    let validationType = '';
+    let message = '';
+
+    if (!query || query.trim().length === 0) {
+        // 빈 입력
+        validationType = 'empty';
+        isValid = false;
+        message = '';
+    } else if (query.trim().length < 5) {
+        // 너무 짧은 입력
+        validationType = 'short';
+        isValid = false;
+        message = '검색어가 너무 짧습니다. 5자 이상 입력해주세요.';
+    } else if (isMeaninglessText(query.trim())) {
+        // 무의미한 텍스트
+        validationType = 'meaningless';
+        isValid = false;
+        message = '의미있는 사고 내용을 입력해주세요. 단순 반복 문자는 허용되지 않습니다.';
+    } else if (!containsAccidentKeywords(query.trim())) {
+        // 산재 키워드 없음
+        validationType = 'no_keywords';
+        isValid = false;
+        message = '산업재해 관련 내용을 포함해주세요. (예: 작업, 사고, 부상, 기계 등)';
+    } else {
+        // 유효한 입력
+        validationType = 'valid';
+        isValid = true;
+        message = '좋은 검색어입니다! 유사한 판례를 찾아보세요.';
+    }
+
+    // UI 업데이트
+    updateValidationUI(validationType, message, {
+        messageElement,
+        iconElement,
+        textElement,
+        examplesElement,
+        inputElement,
+        buttonElement,
+        disabledMessageElement
+    });
+
+    return {
+        isValid,
+        message,
+        type: validationType
+    };
+}
+
+function isMeaninglessText(text) {
+    // 1. 반복 문자 체크 (3글자 이상 연속)
+    const repeatingPattern = /(.)\1{2,}/;
+    if (repeatingPattern.test(text)) {
+        return true;
+    }
+
+    // 2. 단순 패턴 체크
+    const simplePatterns = [
+        /^[a-zA-Z]\1*$/,  // aaaa, bbbb 등
+        /^[0-9]+$/,       // 숫자만
+        /^[ㄱ-ㅎㅏ-ㅣ]+$/, // 자음모음만
+        /^[!@#$%^&*()_+=-]+$/, // 특수문자만
+        /^(.{1,3})\1{2,}$/ // 짧은 패턴 반복
+    ];
+
+    return simplePatterns.some(pattern => pattern.test(text));
+}
+
+function containsAccidentKeywords(text) {
+    const accidentKeywords = [
+        // 기본 산재 키워드
+        '작업', '사고', '부상', '재해', '안전', '기계',
+        // 사고 유형
+        '추락', '낙하', '끼임', '절단', '충돌', '화상', '감전', '중독',
+        // 작업 환경
+        '공장', '건설', '현장', '크레인', '프레스', '용접', '화재',
+        // 신체 부위
+        '손가락', '팔', '다리', '머리', '눈', '허리',
+        // 의료 관련
+        '골절', '상처', '화상', '타박상', '염좌'
+    ];
+
+    const lowerText = text.toLowerCase();
+    return accidentKeywords.some(keyword =>
+        lowerText.includes(keyword) || text.includes(keyword)
+    );
+}
+
+function updateValidationUI(type, message, elements) {
+    const {
+        messageElement, iconElement, textElement, examplesElement,
+        inputElement, buttonElement, disabledMessageElement
+    } = elements;
+
+    // 메시지 표시/숨김
+    if (type === 'empty') {
+        messageElement.classList.add('hidden');
+        inputElement.className = inputElement.className.replace(/ validation-\w+/g, '');
+        buttonElement.disabled = true;
+        disabledMessageElement.classList.remove('hidden');
+        return;
+    }
+
+    messageElement.classList.remove('hidden');
+
+    // 입력 필드 스타일
+    inputElement.className = inputElement.className.replace(/ validation-\w+/g, '');
+
+    if (type === 'valid') {
+        inputElement.classList.add('validation-success');
+        iconElement.textContent = '✅';
+        textElement.className = 'text-green-700 font-medium';
+        examplesElement.classList.add('hidden');
+        buttonElement.disabled = false;
+        disabledMessageElement.classList.add('hidden');
+    } else {
+        inputElement.classList.add('validation-error');
+        iconElement.textContent = '❌';
+        textElement.className = 'text-red-700 font-medium';
+
+        if (type === 'meaningless' || type === 'no_keywords') {
+            examplesElement.classList.remove('hidden');
+        } else {
+            examplesElement.classList.add('hidden');
+        }
+
+        buttonElement.disabled = true;
+        disabledMessageElement.classList.remove('hidden');
+    }
+
+    textElement.textContent = message;
+}
+
+function setQuery(query) {
+    document.getElementById('simple_query').value = query;
+    // 검증 실행
+    validateSearchQuery(query);
+}
+
+async function performSimpleSearch() {
+    const query = document.getElementById('simple_query').value.trim();
+    const resultCount = document.getElementById('result_count').value;
+
+    // 입력 검증
+    const validation = validateSearchQuery(query);
+    if (!validation.isValid) {
+        showError(validation.message);
+        return;
+    }
+
+    showLoading(true);
+    hideError();
+    hideResults();
+
+    try {
+        console.log('🔍 Starting simple search:', query);
+
+        const response = await fetch('/analysis/api/precedent/simple', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded',
+            },
+            body: `query=${encodeURIComponent(query)}&top_k=${resultCount}`
+        });
+
+        const data = await response.json();
+        console.log('📊 Search response:', data);
+
+        showLoading(false);
+
+        if (data.success && data.results && data.results.length > 0) {
+            displayResults(data);
+        } else {
+            showError(data.message || '검색 결과가 없습니다.');
+        }
+
+    } catch (error) {
+        console.error('❌ Search error:', error);
+        showLoading(false);
+        showError(`검색 중 오류가 발생했습니다: ${error.message}`);
+    }
+}
+
+function displayResults(data) {
+    const container = document.getElementById('results-container');
+    const resultsDiv = document.getElementById('search-results');
+
+    let html = `
+        <div class="mb-4 p-4 bg-green-50 border border-green-200 rounded-lg">
+            <h4 class="font-medium text-green-800">✅ 검색 완료</h4>
+            <p class="text-sm text-green-600">
+                검색어: "${data.query}" | 총 ${data.total_results}개 결과 | 검색 방식: ${data.search_type}
+            </p>
+        </div>
+    `;
+
+    data.results.forEach((result, index) => {
+        // 사고유형에 따른 아이콘 설정
+        let categoryIcon = '⚡';
+        if (result.category === '추락사고') categoryIcon = '🪜';
+        else if (result.category === '기계사고') categoryIcon = '⚙️';
+        else if (result.category === '화재사고') categoryIcon = '🔥';
+        else if (result.category === '교통사고') categoryIcon = '🚗';
+        else if (result.category === '중독사고') categoryIcon = '☣️';
+        else if (result.category === '감전사고') categoryIcon = '⚡';
+
+        // title(쟁점)과 kinda(판결결과) 정보 처리
+        const title = result.title || '';
+        const kinda = result.kinda || '';
+        const hasKinda = kinda && kinda.trim() !== '';
+
+        html += `
+            <div class="precedent-card border border-gray-200 rounded-lg p-5 mb-4 bg-white">
+                <!-- 카드 헤더 -->
+                <div class="flex justify-between items-start mb-4">
+                    <h4 class="text-lg font-semibold text-gray-900">
+                        ${index + 1}번 판례
+                    </h4>
+                    <div class="flex items-center text-sm text-gray-500">
+                        <span class="mr-2">${categoryIcon} ${result.category}</span>
+                        <span>${result.accnum || '미상'}</span>
+                    </div>
+                </div>
+
+                <!-- 핵심 정보 -->
+                <div class="space-y-3 mb-4">
+                    <!-- 쟁점 -->
+                    <div class="bg-amber-50 border-l-4 border-amber-400 p-3 rounded-r">
+                        <div class="flex">
+                            <span class="text-amber-600 font-semibold mr-2">🎯</span>
+                            <div>
+                                <h5 class="font-medium text-amber-800 mb-1">쟁점</h5>
+                                <p class="text-sm text-amber-700">${title}</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    ${hasKinda ? `
+                    <!-- 판결결과 -->
+                    <div class="bg-blue-50 border-l-4 border-blue-400 p-3 rounded-r">
+                        <div class="flex">
+                            <span class="text-blue-600 font-semibold mr-2">⚖️</span>
+                            <div>
+                                <h5 class="font-medium text-blue-800 mb-1">판결결과</h5>
+                                <p class="text-sm text-blue-700">${kinda}</p>
+                            </div>
+                        </div>
+                    </div>
+                    ` : ''}
+
+                    ${result.case_type ? `
+                    <!-- 사건분야 -->
+                    <div class="bg-gray-50 border-l-4 border-gray-400 p-3 rounded-r">
+                        <div class="flex">
+                            <span class="text-gray-600 font-semibold mr-2">📋</span>
+                            <div>
+                                <h5 class="font-medium text-gray-700 mb-1">사건분야</h5>
+                                <p class="text-sm text-gray-600">${result.case_type}</p>
+                            </div>
+                        </div>
+                    </div>
+                    ` : ''}
+                </div>
+
+                <!-- 법원 정보 -->
+                <div class="text-sm text-gray-600 mb-4 p-2 bg-gray-50 rounded">
+                    <span class="font-medium">법원:</span> ${result.court}
+                </div>
+
+                <!-- 판례 내용 요약 (처음 200자) -->
+                <div class="mb-4">
+                    <h5 class="font-medium text-gray-800 mb-2">📄 판례 요약</h5>
+                    <p class="text-sm text-gray-700 leading-relaxed line-clamp-3">
+                        ${result.content.length > 200 ? result.content.substring(0, 200) + '...' : result.content}
+                    </p>
+                </div>
+
+                <!-- 액션 버튼들 -->
+                <div class="flex justify-between items-center pt-3 border-t border-gray-100">
+                    <span class="text-xs text-gray-400">Case ID: ${result.case_id}</span>
+                    <div class="flex space-x-2">
+                        <button onclick="viewPrecedentDetail('${result.case_id}')" class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm rounded-md transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500">
+                            📄 상세 보기
+                        </button>
+                    </div>
+                </div>
+            </div>
+        `;
+    });
+
+    container.innerHTML = html;
+    resultsDiv.classList.remove('hidden');
+
+    // 통계 차트 생성 (Chart.js 필요시 로딩)
+    if (data.results && data.results.length > 0) {
+        // Chart.js가 필요한 경우에만 로딩
+        if (window.loadChartJSIfNeeded) {
+            window.loadChartJSIfNeeded().then(() => {
+                generateStatistics(data.results);
+                showStatistics();
+            });
+        } else {
+            // fallback: Chart.js가 이미 로드되어 있는 경우
+            generateStatistics(data.results);
+            showStatistics();
+        }
+    }
+
+    // 레포트 생성을 위한 데이터 업데이트
+    updateCurrentSearchData(data);
+
+    // 레포트 버튼 표시
+    updateReportButtonVisibility();
+
+    // 다음 단계 섹션 표시
+    showNextStepSection();
+}
+
+
+function showLoading(show) {
+    const statusDiv = document.getElementById('search-status');
+    const searchButton = document.getElementById('searchButton');
+
+    if (show) {
+        statusDiv.classList.remove('hidden');
+        searchButton.disabled = true;
+        searchButton.innerHTML = '🔄 검색 중...';
+    } else {
+        statusDiv.classList.add('hidden');
+        searchButton.disabled = false;
+        searchButton.innerHTML = '🔍 판례 검색';
+    }
+}
+
+function hideResults() {
+    document.getElementById('search-results').classList.add('hidden');
+    document.getElementById('statistics-section').classList.add('hidden');
+}
+
+function hideStatistics() {
+    document.getElementById('statistics-section').classList.add('hidden');
+}
+
+function showStatistics() {
+    document.getElementById('statistics-section').classList.remove('hidden');
+}
+
+function showError(message) {
+    document.getElementById('error-message').textContent = message;
+    document.getElementById('error-container').classList.remove('hidden');
+}
+
+function hideError() {
+    document.getElementById('error-container').classList.add('hidden');
+}
+
+function viewPrecedentDetail(caseId) {
+    // 상세 페이지로 이동
+    window.location.href = `/analysis/precedent/${caseId}`;
+}
+
+// ============================================================================
+// 📊 통계 차트 생성 Functions
+// ============================================================================
+
+let outcomeChart, categoryChart, timeChart;
+
+function generateStatistics(results) {
+    console.log('📊 Generating statistics for', results.length, 'results');
+
+    // 통계 데이터 분석
+    const stats = analyzeResults(results);
+
+    // Chart.js 로딩 대기 함수
+    function waitForChartJS(maxWait = 3000, checkInterval = 100) {
+        return new Promise((resolve, reject) => {
+            const startTime = Date.now();
+
+            function check() {
+                // Chart.js 로드 확인
+                if (typeof Chart !== 'undefined' && Chart.version) {
+                    console.log('✅ Chart.js ready:', Chart.version);
+                    resolve(true);
+                    return;
+                }
+
+                // 전역 실패 플래그 확인
+                if (window.chartJSFailed) {
+                    console.log('❌ Chart.js loading failed (global flag)');
+                    resolve(false);
+                    return;
+                }
+
+                // 최대 대기 시간 초과
+                if (Date.now() - startTime > maxWait) {
+                    console.warn('⏰ Chart.js loading timeout');
+                    resolve(false);
+                    return;
+                }
+
+                // 계속 대기
+                setTimeout(check, checkInterval);
+            }
+
+            check();
+        });
+    }
+
+    // Chart.js 로딩 대기 후 차트 생성
+    waitForChartJS().then((chartJSReady) => {
+        if (chartJSReady) {
+            console.log('📊 Using Chart.js for visualization');
+
+            // 기존 차트 정리
+            destroyExistingCharts();
+
+            // Chart.js 차트 생성
+            setTimeout(() => {
+                createOutcomeChart(stats.outcomes);
+                createCategoryChart(stats.categories);
+
+                // 종합 분석 생성
+                generateComprehensiveAnalysis(stats, results.length);
+
+                // 상위 3개 판례 상세 비교표 생성
+                generateTop3Comparison(results.slice(0, 3));
+            }, 100);
+        } else {
+            console.warn('⚠️ Chart.js not available, using fallback visualization');
+            createFallbackVisualization(stats, results.length);
+
+            // fallback에서도 분석과 비교표는 생성
+            generateComprehensiveAnalysis(stats, results.length);
+            generateTop3Comparison(results.slice(0, 3));
+        }
+    });
+}
+
+function createFallbackVisualization(stats, totalResults) {
+    // Chart.js가 로드되지 않았을 때 사용할 대체 시각화
+    console.log('🔧 Creating fallback visualization for', totalResults, 'results');
+
+    // 안전한 유리도 계산 (Test_casePedia 방식)
+    const favorableCount = stats.outcomes['유리'] || 0;
+    const favorableRate = totalResults > 0 ? (favorableCount / totalResults * 100).toFixed(1) : 0;
+
+    // 주요 카테고리 안전하게 계산
+    const categoryEntries = Object.entries(stats.categories || {});
+    const mainCategory = categoryEntries.length > 0 ? categoryEntries.sort((a, b) => b[1] - a[1])[0][0] : '추락사고';
+
+    // 종합 분석 생성
+    generateComprehensiveAnalysis(stats, totalResults);
+
+    // 유리도 진행바 생성 (캔버스 부모 div 내용 교체) - Chart.js 스타일 모사
+    const outcomeChart = document.getElementById('outcomeChart');
+    const outcomeSummary = document.getElementById('outcome-summary');
+
+    if (outcomeChart && outcomeChart.parentElement) {
+        const colorMap = {
+            '유리': '#22C55E',    // green-500
+            '불리': '#EF4444'     // red-500
+        };
+
+        const outcomeEntries = Object.entries(stats.outcomes || {}).filter(([k,v]) => v > 0);
+        const rateColor = favorableRate >= 70 ? 'text-green-600' : favorableRate >= 50 ? 'text-blue-600' : 'text-amber-600';
+
+        outcomeChart.parentElement.innerHTML = `
+            <div class="p-3 bg-white rounded-lg border border-gray-100">
+                <div class="text-center mb-3">
+                    <span class="text-xl font-bold ${rateColor}">${favorableRate}%</span>
+                    <div class="text-xs text-gray-600">평균 유리도</div>
+                </div>
+
+                <!-- 도넛 차트 스타일 모사 -->
+                <div class="relative w-32 h-32 mx-auto mb-3">
+                    <div class="absolute inset-0 rounded-full border-8 border-gray-200"></div>
+                    <div class="absolute inset-0 rounded-full border-8 border-green-500 border-r-transparent border-b-transparent transform rotate-45"
+                         style="border-right-color: transparent; border-bottom-color: transparent;
+                                border-top-color: ${favorableRate >= 70 ? '#22C55E' : favorableRate >= 50 ? '#3B82F6' : '#F59E0B'};
+                                border-left-color: ${favorableRate >= 70 ? '#22C55E' : favorableRate >= 50 ? '#3B82F6' : '#F59E0B'};">
+                    </div>
+                    <div class="absolute inset-4 flex items-center justify-center">
+                        <span class="text-sm font-semibold text-gray-700">${favorableRate}%</span>
+                    </div>
+                </div>
+
+                <div class="text-xs text-gray-600 space-y-1">
+                    ${outcomeEntries.map(([key, val]) => {
+                        const color = colorMap[key] || '#6B7280';
+                        return `<div class="flex justify-between items-center">
+                            <div class="flex items-center">
+                                <div class="w-3 h-3 rounded-full mr-2" style="background-color: ${color}"></div>
+                                <span>${key}</span>
+                            </div>
+                            <span class="font-medium">${val}건</span>
+                        </div>`;
+                    }).join('')}
+                </div>
+            </div>
+        `;
+    }
+
+    // 요약 정보 업데이트
+    if (outcomeSummary) {
+        outcomeSummary.innerHTML = `업데이트: ${new Date().toLocaleTimeString()}`;
+    }
+
+    // 카테고리 막대 그래프 (캔버스 부모 div 내용 교체)
+    const categoryChart = document.getElementById('categoryChart');
+    const categorySummary = document.getElementById('category-summary');
+
+    if (categoryChart && categoryChart.parentElement) {
+        categoryChart.parentElement.innerHTML = `
+            <div class="p-3">
+                <div class="space-y-2">
+                    ${Object.entries(stats.categories || {}).map(([category, count], index) => {
+                        const percentage = totalResults > 0 ? (count / totalResults * 100).toFixed(1) : 0;
+                        const colors = ['bg-purple-500', 'bg-blue-500', 'bg-green-500', 'bg-yellow-500', 'bg-red-500'];
+                        return `
+                            <div class="text-xs">
+                                <div class="flex justify-between mb-1">
+                                    <span class="text-gray-700">${category}</span>
+                                    <span class="text-gray-600">${count}건 (${percentage}%)</span>
+                                </div>
+                                <div class="w-full bg-gray-200 rounded h-2">
+                                    <div class="${colors[index % colors.length]} h-2 rounded transition-all duration-500" style="width: ${percentage}%"></div>
+                                </div>
+                            </div>
+                        `;
+                    }).join('')}
+                </div>
+            </div>
+        `;
+    }
+
+    // 요약 정보 업데이트
+    if (categorySummary) {
+        categorySummary.innerHTML = `총 ${totalResults}건 분석`;
+    }
+
+    console.log('✅ Fallback visualization created successfully');
+}
+
+function destroyExistingCharts() {
+    if (outcomeChart) {
+        outcomeChart.destroy();
+        outcomeChart = null;
+    }
+    if (categoryChart) {
+        categoryChart.destroy();
+        categoryChart = null;
+    }
+}
+
+function analyzeResults(results) {
+    console.log('🔍 Analyzing real precedent data:', results);
+
+    const outcomes = { '유리': 0, '불리': 0 };
+    const categories = {};
+    const courts = {};
+    const similarities = [];
+
+    results.forEach((result, index) => {
+        console.log(`📋 Analyzing case ${index + 1}:`, result);
+
+        // 1. 유불리 분석 (실제 판례 제목과 내용 분석) - predictOutcome과 동일한 로직
+        const title = result.title ? result.title : '';
+        const content = result.content ? result.content : '';
+        const titleLower = title.toLowerCase();
+        const contentLower = content.toLowerCase();
+
+        // Test_casePedia.ipynb 원본 키워드 적용
+        const favorableKeywords = [
+            '청구인용', '원고승소', '원고 승소', '인용한다', '취소한다',
+            '원처분을 취소', '처분을 취소', '항소를 기각', '상고를 기각',
+            '업무상 재해로 인정', '업무상 질병으로 인정', '업무상 사고로 인정',
+            '요양급여를 지급', '장해급여를 지급', '유족급여를 지급'
+        ];
+
+        const unfavorableKeywords = [
+            '청구기각', '청구를 기각', '원고패소', '원고 패소', '기각한다',
+            '항소를 인용', '상고를 인용', '원심을 파기',
+            '업무상 재해로 인정할 수 없', '업무상 질병으로 볼 수 없',
+            '상당인과관계가 없', '상당인과관계를 인정할 수 없',
+            '업무와 무관', '사적 행위', '개인적 사정',
+            '불승인 처분은 적법', '불지급 처분은 정당'
+        ];
+
+        // Test_casePedia.ipynb 원본 분석 방식 구현
+        // 1. kinda 값(판결결과) 직접 활용 (가장 우선순위)
+        const kinda = (result.kinda || '').toLowerCase();
+        let kindaFavorable = 0;
+        let kindaUnfavorable = 0;
+
+        // 판결결과별 분류
+        const favorableOutcomes = ['취소', '인용', '승소', '승인', '지급'];
+        const unfavorableOutcomes = ['기각', '각하', '패소', '거부', '불인정', '취하'];
+
+        for (const outcome of favorableOutcomes) {
+            if (kinda.includes(outcome)) {
+                kindaFavorable += 5; // 판결결과는 최고 가중치
+                break;
+            }
+        }
+
+        for (const outcome of unfavorableOutcomes) {
+            if (kinda.includes(outcome)) {
+                kindaUnfavorable += 5; // 판결결과는 최고 가중치
+                break;
+            }
+        }
+
+        // 2. 문서의 마지막 30% 부분(결론) 추출
+        const textLen = contentLower.length;
+        const conclusion = contentLower.substring(Math.floor(textLen * 0.7)); // 마지막 30%
+
+        // 3. 결론 부분에서 키워드 카운트 (가중치 2배)
+        let favConclusion = 0;
+        let unfConclusion = 0;
+
+        for (const keyword of favorableKeywords) {
+            const keywordLower = keyword.toLowerCase();
+            if (conclusion.includes(keywordLower)) {
+                favConclusion += 2; // 결론 부분 가중치
+            }
+        }
+
+        for (const keyword of unfavorableKeywords) {
+            const keywordLower = keyword.toLowerCase();
+            if (conclusion.includes(keywordLower)) {
+                unfConclusion += 2; // 결론 부분 가중치
+            }
+        }
+
+        // 4. 전체 문서에서 키워드 카운트 (기본 가중치 1배)
+        let favTotal = 0;
+        let unfTotal = 0;
+
+        for (const keyword of favorableKeywords) {
+            const keywordLower = keyword.toLowerCase();
+            if (contentLower.includes(keywordLower) || titleLower.includes(keywordLower)) {
+                favTotal += 1;
+            }
+        }
+
+        for (const keyword of unfavorableKeywords) {
+            const keywordLower = keyword.toLowerCase();
+            if (contentLower.includes(keywordLower) || titleLower.includes(keywordLower)) {
+                unfTotal += 1;
+            }
+        }
+
+        // 5. 합산 점수 계산 (kinda 포함)
+        const favorableScore = kindaFavorable + favConclusion + favTotal;
+        const unfavorableScore = kindaUnfavorable + unfConclusion + unfTotal;
+
+        // Test_casePedia.ipynb 원본 판정 로직 그대로 적용 (2가지 분류)
+        if (favorableScore > unfavorableScore + 2) {
+            outcomes['유리']++;  // 유리 O: favorable이 2점 이상 높으면
+        } else {
+            outcomes['불리']++;  // 불리 X: 그 외 모든 경우 (애매 포함)
+        }
+
+        // 2. 사고유형별 분류 (실제 카테고리 사용)
+        let category = result.category;
+        if (!category || category === '기타') {
+            // 내용에서 사고유형 추정
+            if (contentLower.includes('추락') || titleLower.includes('추락')) category = '추락사고';
+            else if (contentLower.includes('기계') || titleLower.includes('기계') ||
+                    contentLower.includes('끼임') || contentLower.includes('절단')) category = '기계사고';
+            else if (contentLower.includes('화상') || titleLower.includes('화재')) category = '화재사고';
+            else if (contentLower.includes('감전') || titleLower.includes('전기')) category = '감전사고';
+            else if (contentLower.includes('교통') || titleLower.includes('차량')) category = '교통사고';
+            else category = '산업재해';
+        }
+        categories[category] = (categories[category] || 0) + 1;
+
+        // 3. 법원별 분석
+        const court = result.court || '기타 법원';
+        courts[court] = (courts[court] || 0) + 1;
+
+        // 4. 유사도 수집
+        if (result.similarity_pct) {
+            similarities.push(result.similarity_pct);
+        }
+    });
+
+    // 분석 결과 로깅
+    console.log('📊 Analysis results:', {
+        outcomes,
+        categories,
+        courts,
+        avg_similarity: similarities.length > 0 ?
+            (similarities.reduce((a, b) => a + b, 0) / similarities.length).toFixed(2) : 0
+    });
+
+    return { outcomes, categories, courts, similarities };
+}
+
+function createOutcomeChart(outcomes) {
+    try {
+        const ctx = document.getElementById('outcomeChart');
+        if (!ctx) {
+            console.error('❌ outcomeChart canvas not found');
+            return;
+        }
+
+        const total = Object.values(outcomes).reduce((a, b) => a + b, 0);
+        if (total === 0) {
+            console.log('⚠️ No data for outcome chart');
+            return;
+        }
+
+        // 데이터 필터링 (0보다 큰 값만)
+        const filteredData = Object.entries(outcomes)
+            .filter(([key, value]) => value > 0)
+            .map(([key, value]) => ({ label: key, value }));
+
+        // shadcn 색상 팔레트 적용 (Test_casePedia 방식)
+        const colorMap = {
+            '유리': '#22C55E',    // green-500
+            '불리': '#EF4444'     // red-500
+        };
+
+        outcomeChart = new Chart(ctx, {
+            type: 'doughnut',
+            data: {
+                labels: filteredData.map(d => d.label),
+                datasets: [{
+                    data: filteredData.map(d => d.value),
+                    backgroundColor: filteredData.map(d => colorMap[d.label] || '#6B7280'),
+                    borderWidth: 2,
+                    borderColor: '#FFFFFF',
+                    hoverBorderWidth: 3,
+                    hoverBorderColor: '#F1F5F9'
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                cutout: '60%',
+                plugins: {
+                    legend: {
+                        position: 'bottom',
+                        labels: {
+                            font: {
+                                size: 11,
+                                weight: 500
+                            },
+                            padding: 15,
+                            usePointStyle: true,
+                            pointStyle: 'circle'
+                        }
+                    },
+                    tooltip: {
+                        backgroundColor: '#1F2937',
+                        titleColor: '#F9FAFB',
+                        bodyColor: '#F9FAFB',
+                        borderColor: '#374151',
+                        borderWidth: 1,
+                        cornerRadius: 8,
+                        displayColors: true,
+                        callbacks: {
+                            label: function(context) {
+                                const percentage = ((context.parsed / total) * 100).toFixed(1);
+                                return `${context.label}: ${context.parsed}건 (${percentage}%)`;
+                            }
+                        }
+                    }
+                },
+                animation: {
+                    animateRotate: true,
+                    duration: 800
+                }
+            }
+        });
+
+        // 요약 정보 업데이트 (Test_casePedia 방식)
+        const favorableCount = outcomes['유리'] || 0;
+        const favorableRate = ((favorableCount / total) * 100).toFixed(1);
+
+        document.getElementById('outcome-summary').innerHTML = `
+            <div class="space-y-1">
+                <p class="text-xs"><strong>평균 유리도:</strong> ${favorableRate}%</p>
+                <p class="text-xs ${favorableRate >= 70 ? 'text-green-600' : favorableRate >= 50 ? 'text-blue-600' : 'text-amber-600'}">
+                    ${favorableRate >= 70 ? '✅ 매우 유리함' : favorableRate >= 50 ? '⚖️ 보통' : '⚠️ 신중한 접근 필요'}
+                </p>
+            </div>
+        `;
+
+        console.log('✅ Outcome doughnut chart created successfully');
+    } catch (error) {
+        console.error('❌ Error creating outcome chart:', error);
+    }
+}
+
+function createCategoryChart(categories) {
+    try {
+        const ctx = document.getElementById('categoryChart');
+        if (!ctx) {
+            console.error('❌ categoryChart canvas not found');
+            return;
+        }
+
+        const categoryEntries = Object.entries(categories)
+            .filter(([key, value]) => value > 0)
+            .sort((a, b) => b[1] - a[1]); // 내림차순 정렬
+
+        if (categoryEntries.length === 0) {
+            console.log('⚠️ No data for category chart');
+            return;
+        }
+
+        // shadcn 스타일 색상 (자동차 사고 유형별 색상 맵핑)
+        const categoryColors = [
+            '#8B5CF6',  // purple-500 - 추락사고
+            '#06B6D4',  // cyan-500 - 기계사고
+            '#10B981',  // emerald-500 - 화재사고
+            '#F59E0B',  // amber-500 - 교통사고
+            '#EF4444',  // red-500 - 감전사고
+            '#6B7280',  // gray-500 - 중독사고
+            '#EC4899',  // pink-500 - 기타
+        ];
+
+        categoryChart = new Chart(ctx, {
+            type: 'doughnut',
+            data: {
+                labels: categoryEntries.map(([key, value]) => key),
+                datasets: [{
+                    data: categoryEntries.map(([key, value]) => value),
+                    backgroundColor: categoryEntries.map((_, index) => categoryColors[index % categoryColors.length]),
+                    borderWidth: 2,
+                    borderColor: '#FFFFFF',
+                    hoverBorderWidth: 3,
+                    hoverBorderColor: '#F1F5F9'
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                cutout: '50%',
+                plugins: {
+                    legend: {
+                        position: 'bottom',
+                        labels: {
+                            font: {
+                                size: 10,
+                                weight: 500
+                            },
+                            padding: 12,
+                            usePointStyle: true,
+                            pointStyle: 'circle',
+                            generateLabels: function(chart) {
+                                const data = chart.data;
+                                if (data.labels.length && data.datasets.length) {
+                                    return data.labels.map((label, i) => {
+                                        const dataset = data.datasets[0];
+                                        const value = dataset.data[i];
+                                        const total = dataset.data.reduce((a, b) => a + b, 0);
+                                        const percentage = ((value / total) * 100).toFixed(1);
+                                        return {
+                                            text: `${label} (${percentage}%)`,
+                                            fillStyle: dataset.backgroundColor[i],
+                                            strokeStyle: dataset.borderColor,
+                                            lineWidth: dataset.borderWidth,
+                                            hidden: false,
+                                            index: i
+                                        };
+                                    });
+                                }
+                                return [];
+                            }
+                        }
+                    },
+                    tooltip: {
+                        backgroundColor: '#1F2937',
+                        titleColor: '#F9FAFB',
+                        bodyColor: '#F9FAFB',
+                        borderColor: '#374151',
+                        borderWidth: 1,
+                        cornerRadius: 8,
+                        displayColors: true,
+                        callbacks: {
+                            label: function(context) {
+                                const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                                const percentage = ((context.parsed / total) * 100).toFixed(1);
+                                return `${context.label}: ${context.parsed}건 (${percentage}%)`;
+                            }
+                        }
+                    }
+                },
+                animation: {
+                    animateRotate: true,
+                    duration: 800
+                }
+            }
+        });
+
+        // 가장 많은 유형과 총 유형 수
+        const mostCommon = categoryEntries[0];
+        const totalCategories = categoryEntries.length;
+
+        document.getElementById('category-summary').innerHTML = `
+            <div class="space-y-1">
+                <p class="text-xs"><strong>주요 유형:</strong> ${mostCommon[0]} (${mostCommon[1]}건)</p>
+                <p class="text-xs text-gray-600">총 ${totalCategories}개 사고 유형 분석됨</p>
+            </div>
+        `;
+
+        console.log('✅ Category doughnut chart created successfully');
+    } catch (error) {
+        console.error('❌ Error creating category chart:', error);
+    }
+}
+
+
+function generateComprehensiveAnalysis(stats, totalResults) {
+    try {
+        // 실제 유리도 계산 (Test_casePedia 방식)
+        const favorableRate = ((stats.outcomes['유리'] || 0) / totalResults * 100).toFixed(1);
+        const mainCategory = Object.entries(stats.categories).sort((a, b) => b[1] - a[1])[0][0];
+
+        // 평균 유사도 계산
+        const avgSimilarity = stats.similarities && stats.similarities.length > 0 ?
+            (stats.similarities.reduce((a, b) => a + b, 0) / stats.similarities.length).toFixed(1) : '0';
+
+        let analysis = `
+            <div class="grid grid-cols-3 gap-2 mb-3">
+                <div class="text-center p-2 bg-white rounded border">
+                    <div class="text-lg font-bold text-green-600">${favorableRate}%</div>
+                    <div class="text-xs text-gray-600">평균 유리도</div>
+                </div>
+                <div class="text-center p-2 bg-white rounded border">
+                    <div class="text-lg font-bold text-blue-600">${totalResults}</div>
+                    <div class="text-xs text-gray-600">판례 수</div>
+                </div>
+                <div class="text-center p-2 bg-white rounded border">
+                    <div class="text-sm font-bold text-purple-600">${avgSimilarity}%</div>
+                    <div class="text-xs text-gray-600">평균 유사도</div>
+                </div>
+            </div>
+            <div class="space-y-1 text-xs">
+                <p>🎯 <strong>유리도:</strong> ${favorableRate}% (${stats.outcomes['유리'] || 0}건 유리한 결과)</p>
+                <p>📋 <strong>주요 유형:</strong> ${mainCategory} (${stats.categories[mainCategory]}건)</p>
+                <p>📊 <strong>유사도:</strong> 평균 ${avgSimilarity}% (Test_casePedia 분석)</p>
+                <p>💡 <strong>전략:</strong> ${favorableRate >= 70 ? '유리한 판례 다수' : favorableRate >= 50 ? '신중한 접근 필요' : '추가 증거 수집 권장'}</p>
+            </div>
+        `;
+
+        document.getElementById('comprehensive-analysis').innerHTML = analysis;
+        console.log('✅ Comprehensive analysis generated successfully');
+    } catch (error) {
+        console.error('❌ Error generating comprehensive analysis:', error);
+    }
+}
+
+function generateTop3Comparison(top3Results) {
+    try {
+        if (!top3Results || top3Results.length === 0) {
+            document.getElementById('top3-comparison').innerHTML = '<p class="text-gray-500 text-xs">비교할 판례가 없습니다.</p>';
+            return;
+        }
+
+        console.log('📋 상위 3개 판례 비교 생성 중:', top3Results);
+
+        let comparisonHTML = `
+            <div class="overflow-x-auto">
+                <table class="w-full text-xs">
+                    <thead>
+                        <tr class="bg-gray-50">
+                            <th class="text-left py-2 px-2 font-semibold text-gray-700 border-r">구분</th>
+                            <th class="text-left py-2 px-2 font-semibold text-blue-700 border-r">1위 (최고 유사도)</th>
+                            <th class="text-left py-2 px-2 font-semibold text-purple-700 border-r">2위</th>
+                            <th class="text-left py-2 px-2 font-semibold text-green-700">3위</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-gray-200">
+        `;
+
+        // 유사도 비교
+        comparisonHTML += `
+            <tr>
+                <td class="py-2 px-2 font-medium text-gray-600 border-r bg-gray-50">유사도</td>
+                ${top3Results.map((result, index) => {
+                    const similarity = result.similarity_pct || (result.similarity * 100) || 0;
+                    const color = index === 0 ? 'text-blue-600' : index === 1 ? 'text-purple-600' : 'text-green-600';
+                    return `<td class="py-2 px-2 ${color} font-semibold ${index < 2 ? 'border-r' : ''}">${similarity.toFixed(1)}%</td>`;
+                }).join('')}
+            </tr>
+        `;
+
+        // 사고 유형 비교
+        comparisonHTML += `
+            <tr>
+                <td class="py-2 px-2 font-medium text-gray-600 border-r bg-gray-50">사고유형</td>
+                ${top3Results.map((result, index) => {
+                    const category = result.category || '기타';
+                    const categoryIcon = getCategoryIcon(category);
+                    return `<td class="py-2 px-2 text-gray-700 ${index < 2 ? 'border-r' : ''}">${categoryIcon} ${category}</td>`;
+                }).join('')}
+            </tr>
+        `;
+
+        // 법원 및 날짜
+        comparisonHTML += `
+            <tr>
+                <td class="py-2 px-2 font-medium text-gray-600 border-r bg-gray-50">법원</td>
+                ${top3Results.map((result, index) => {
+                    const court = result.court || '미상';
+                    const shortCourt = court.length > 8 ? court.substring(0, 8) + '...' : court;
+                    return `<td class="py-2 px-2 text-gray-700 ${index < 2 ? 'border-r' : ''}" title="${court}">${shortCourt}</td>`;
+                }).join('')}
+            </tr>
+        `;
+
+        comparisonHTML += `
+            <tr>
+                <td class="py-2 px-2 font-medium text-gray-600 border-r bg-gray-50">연도</td>
+                ${top3Results.map((result, index) => {
+                    let year = '미상';
+
+                    // 1순위: accnum 필드 직접 사용 (이미 extract_year_from_text로 추출된 연도)
+                    if (result.accnum && result.accnum !== '미상') {
+                        year = result.accnum;
+                    }
+                    // 2순위: title에서 직접 연도 추출
+                    else if (result.title) {
+                        const title = result.title;
+                        // 한국 법원 사건번호 패턴
+                        const courtPatterns = [
+                            /(\d{4})고합/,  // 2018고합123
+                            /(\d{4})고단/,  // 2019고단456
+                            /(\d{4})나/,    // 2020나789
+                            /(\d{4})다/,    // 2021다123
+                            /(\d{4})누/,    // 행정소송
+                        ];
+
+                        for (const pattern of courtPatterns) {
+                            const match = title.match(pattern);
+                            if (match && parseInt(match[1]) >= 1990 && parseInt(match[1]) <= 2030) {
+                                year = match[1];
+                                break;
+                            }
+                        }
+                    }
+                    // 3순위: date 필드에서 연도 추출
+                    if (year === '미상' && result.date) {
+                        const dateMatch = result.date.match(/(\d{4})/);
+                        if (dateMatch && parseInt(dateMatch[1]) >= 1990 && parseInt(dateMatch[1]) <= 2030) {
+                            year = dateMatch[1];
+                        }
+                    }
+
+                    return `<td class="py-2 px-2 text-gray-600 ${index < 2 ? 'border-r' : ''}">${year}</td>`;
+                }).join('')}
+            </tr>
+        `;
+
+        // 예상 결과 (제목과 내용에서 추출)
+        comparisonHTML += `
+            <tr>
+                <td class="py-2 px-2 font-medium text-gray-600 border-r bg-gray-50">예상결과</td>
+                ${top3Results.map((result, index) => {
+                    const outcome = predictOutcome(result);
+                    const { text, color } = getOutcomeDisplay(outcome);
+                    return `<td class="py-2 px-2 ${color} font-medium ${index < 2 ? 'border-r' : ''}">${text}</td>`;
+                }).join('')}
+            </tr>
+        `;
+
+
+        comparisonHTML += `
+                    </tbody>
+                </table>
+            </div>
+        `;
+
+        // 상위 판례 요약 텍스트 추가
+        comparisonHTML += `
+            <div class="mt-3 pt-3 border-t border-gray-200">
+                <p class="text-xs text-gray-600 font-medium mb-2">📝 핵심 시사점:</p>
+                <div class="space-y-1">
+                    ${top3Results.map((result, index) => {
+                        const title = result.title || '';
+                        const shortTitle = title.length > 30 ? title.substring(0, 30) + '...' : title;
+                        const rankColor = index === 0 ? 'text-blue-600' : index === 1 ? 'text-purple-600' : 'text-green-600';
+                        return `<p class="text-xs"><span class="${rankColor} font-semibold">${index + 1}위:</span> ${shortTitle}</p>`;
+                    }).join('')}
+                </div>
+            </div>
+        `;
+
+        document.getElementById('top3-comparison').innerHTML = comparisonHTML;
+        console.log('✅ 상위 3개 판례 비교표 생성 완료');
+
+    } catch (error) {
+        console.error('❌ 상위 3개 판례 비교표 생성 실패:', error);
+        document.getElementById('top3-comparison').innerHTML = '<p class="text-red-500 text-xs">비교표 생성 중 오류가 발생했습니다.</p>';
+    }
+}
+
+// 헬퍼 함수들
+function getCategoryIcon(category) {
+    const iconMap = {
+        '추락사고': '🪜',
+        '기계사고': '⚙️',
+        '화재사고': '🔥',
+        '교통사고': '🚗',
+        '중독사고': '☣️',
+        '감전사고': '⚡',
+        '산업재해': '⚠️'
+    };
+    return iconMap[category] || '⚡';
+}
+
+function predictOutcome(result) {
+    const title = (result.title || '').toLowerCase();
+    const content = (result.content || '').toLowerCase();
+
+    console.log('🔍 Analyzing outcome for:', title.substring(0, 50), '...'); // 디버깅 로그
+
+    // Test_casePedia.ipynb 원본 키워드 적용
+    const favorableKeywords = [
+        '청구인용', '원고승소', '원고 승소', '인용한다', '취소한다',
+        '원처분을 취소', '처분을 취소', '항소를 기각', '상고를 기각',
+        '업무상 재해로 인정', '업무상 질병으로 인정', '업무상 사고로 인정',
+        '요양급여를 지급', '장해급여를 지급', '유족급여를 지급'
+    ];
+
+    const unfavorableKeywords = [
+        '청구기각', '청구를 기각', '원고패소', '원고 패소', '기각한다',
+        '항소를 인용', '상고를 인용', '원심을 파기',
+        '업무상 재해로 인정할 수 없', '업무상 질병으로 볼 수 없',
+        '상당인과관계가 없', '상당인과관계를 인정할 수 없',
+        '업무와 무관', '사적 행위', '개인적 사정',
+        '불승인 처분은 적법', '불지급 처분은 정당'
+    ];
+
+    // Test_casePedia.ipynb 원본 분석 방식 구현
+    // 1. kinda 값(판결결과) 직접 활용 (가장 우선순위)
+    const kinda = (result.kinda || '').toLowerCase();
+    let kindaFavorable = 0;
+    let kindaUnfavorable = 0;
+
+    // 판결결과별 분류
+    const favorableOutcomes = ['취소', '인용', '승소', '승인', '지급'];
+    const unfavorableOutcomes = ['기각', '각하', '패소', '거부', '불인정', '취하'];
+
+    for (const outcome of favorableOutcomes) {
+        if (kinda.includes(outcome)) {
+            kindaFavorable += 5; // 판결결과는 최고 가중치
+            break;
+        }
+    }
+
+    for (const outcome of unfavorableOutcomes) {
+        if (kinda.includes(outcome)) {
+            kindaUnfavorable += 5; // 판결결과는 최고 가중치
+            break;
+        }
+    }
+
+    // 2. 문서의 마지막 30% 부분(결론) 추출
+    const textLen = content.length;
+    const conclusion = content.substring(Math.floor(textLen * 0.7)); // 마지막 30%
+
+    // 3. 결론 부분에서 키워드 카운트 (가중치 2배)
+    let favConclusion = 0;
+    let unfConclusion = 0;
+
+    for (const keyword of favorableKeywords) {
+        const keywordLower = keyword.toLowerCase();
+        if (conclusion.includes(keywordLower)) {
+            favConclusion += 2; // 결론 부분 가중치
+        }
+    }
+
+    for (const keyword of unfavorableKeywords) {
+        const keywordLower = keyword.toLowerCase();
+        if (conclusion.includes(keywordLower)) {
+            unfConclusion += 2; // 결론 부분 가중치
+        }
+    }
+
+    // 4. 전체 문서에서 키워드 카운트 (기본 가중치 1배)
+    let favTotal = 0;
+    let unfTotal = 0;
+
+    for (const keyword of favorableKeywords) {
+        const keywordLower = keyword.toLowerCase();
+        if (content.includes(keywordLower) || title.includes(keywordLower)) {
+            favTotal += 1;
+        }
+    }
+
+    for (const keyword of unfavorableKeywords) {
+        const keywordLower = keyword.toLowerCase();
+        if (content.includes(keywordLower) || title.includes(keywordLower)) {
+            unfTotal += 1;
+        }
+    }
+
+    // 5. 합산 점수 계산 (kinda 포함)
+    const favorableScore = kindaFavorable + favConclusion + favTotal;
+    const unfavorableScore = kindaUnfavorable + unfConclusion + unfTotal;
+
+    console.log(`📊 Scores - Favorable: ${favorableScore} (kinda: ${kindaFavorable}, 결론: ${favConclusion}, 전체: ${favTotal})`);
+    console.log(`📊 Scores - Unfavorable: ${unfavorableScore} (kinda: ${kindaUnfavorable}, 결론: ${unfConclusion}, 전체: ${unfTotal})`);
+
+    // Test_casePedia.ipynb 원본 판정 로직 그대로 적용 (2가지 분류)
+    if (favorableScore > unfavorableScore + 2) {
+        console.log('✅ 유리 O: favorable이 2점 이상 높음');
+        return 'favorable';
+    } else {
+        console.log('❌ 불리 X: 그 외 모든 경우');
+        return 'unfavorable';
+    }
+}
+
+function getOutcomeDisplay(outcome) {
+    const outcomeMap = {
+        'favorable': { text: '✅ 유리', color: 'text-green-600' },
+        'unfavorable': { text: '❌ 불리', color: 'text-red-600' }
+    };
+    return outcomeMap[outcome] || { text: '❌ 불리', color: 'text-red-600' };
+}
+
+
+// 페이지 로드 시 서비스 상태 확인
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('🚀 유사 판례 검색 UI loaded');
+
+    // 초기 검증 실행
+    const queryInput = document.getElementById('simple_query');
+    if (queryInput) {
+        validateSearchQuery(queryInput.value);
+    }
+
+    // Chart.js 로딩 상태 디버깅 정보 출력
+    setTimeout(() => {
+        console.log('🔍 Chart.js 디버깅 정보:');
+        console.log('- typeof Chart:', typeof Chart);
+        console.log('- Chart.version:', typeof Chart !== 'undefined' ? Chart.version : 'N/A');
+        console.log('- window.chartJSFailed:', window.chartJSFailed);
+
+        if (typeof Chart !== 'undefined') {
+            console.log('✅ Chart.js 사용 가능 - 고품질 인터랙티브 차트 활성화');
+        } else {
+            console.log('⚠️ Chart.js 미사용 - HTML/CSS fallback 차트 활성화');
+        }
+
+        // 구현된 시각화 기능 안내
+        console.log('📊 구현된 시각화 기능:');
+        console.log('1. 🎯 종합 분석 (유리도 %, 주요 유형, 평균 유사도)');
+        console.log('2. 🏆 상위 3개 판례 비교표 (6개 항목 비교)');
+        console.log('3. 📊 유불리 분석 차트 (승소/인정/기각/화해 비율)');
+        console.log('4. 🏭 사고유형 분포 차트 (추락/기계/화재 등)');
+        console.log('💡 검색을 수행하면 위 시각화들이 사이드바에 나타납니다!');
+    }, 500);
+
+    // URL에서 쿼리 파라미터 확인 후 자동 검색
+    const urlParams = new URLSearchParams(window.location.search);
+    const queryParam = urlParams.get('query');
+
+    if (queryParam) {
+        document.getElementById('simple_query').value = queryParam;
+        performSimpleSearch();
+    }
+
+    // Enter 키 검색 지원
+    document.getElementById('simple_query').addEventListener('keypress', function(e) {
+        if (e.key === 'Enter' && e.ctrlKey) {
+            performSimpleSearch();
+        }
+    });
+});
+
+// ========================
+// 📄 레포트 생성 관련 함수들
+// ========================
+
+// 전역 변수: 현재 검색 결과 및 통계
+let currentSearchData = {
+    query: '',
+    results: [],
+    statistics: {},
+    analysis: {}
+};
+
+async function generatePrecedentReport() {
+    const button = document.getElementById('save-report-btn');
+    const originalText = button.querySelector('span').textContent;
+
+    try {
+        // 버튼 비활성화 및 로딩 표시
+        button.disabled = true;
+        button.querySelector('span').textContent = '생성 중...';
+
+        // 데이터 검증
+        if (!currentSearchData.results || currentSearchData.results.length === 0) {
+            throw new Error('레포트 생성을 위한 검색 결과가 없습니다');
+        }
+
+        console.log('📄 PDF 레포트 생성 시작:', currentSearchData);
+
+        // API 호출
+        const response = await fetch('/analysis/api/generate-report', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': getCsrfToken()
+            },
+            body: JSON.stringify(currentSearchData)
+        });
+
+        const result = await response.json();
+
+        if (response.ok && result.success) {
+            // 텍스트 레포트 다운로드 (안전하고 확실한 방식)
+            if (result.text_data && result.filename) {
+                downloadTextFromBase64(result.text_data, result.filename);
+                console.log('✅ 텍스트 레포트 다운로드 완료:', result.filename);
+                console.log('📊 파일 크기:', result.size, 'bytes');
+                console.log('⏱️ 생성 시간:', result.generation_time);
+                console.log('📄 포맷:', result.format);
+            } else {
+                throw new Error('레포트 데이터 또는 파일명이 없습니다');
+            }
+
+            // 성공 메시지 표시
+            showReportSuccessMessage(result);
+
+        } else {
+            throw new Error(result.error || '레포트 생성 중 오류가 발생했습니다');
+        }
+
+    } catch (error) {
+        console.error('❌ 레포트 생성 실패:', error);
+        showReportErrorMessage(error.message);
+    } finally {
+        // 버튼 상태 복원
+        button.disabled = false;
+        button.querySelector('span').textContent = originalText;
+    }
+}
+
+function downloadTextFromBase64(base64Data, filename) {
+    try {
+        // UTF-8 지원 Base64 디코딩 (한글 깨짐 완전 방지)
+
+        // 1. Base64 문자열을 바이너리 문자열로 변환
+        const binaryString = atob(base64Data);
+
+        // 2. 바이너리 문자열을 Uint8Array로 변환 (UTF-8 바이트 배열)
+        const uint8Array = new Uint8Array(binaryString.length);
+        for (let i = 0; i < binaryString.length; i++) {
+            uint8Array[i] = binaryString.charCodeAt(i);
+        }
+
+        // 3. TextDecoder로 UTF-8 디코딩 (한글 완전 지원!)
+        const textDecoder = new TextDecoder('utf-8');
+        const textData = textDecoder.decode(uint8Array);
+
+        // 4. UTF-8 BOM 추가 (추가 안전장치)
+        const bom = '\uFEFF';
+        const textWithBom = bom + textData;
+
+        // 5. Blob 생성 (텍스트 파일)
+        const blob = new Blob([textWithBom], {
+            type: 'text/plain;charset=utf-8'
+        });
+
+        // 6. 다운로드 실행
+        const url = window.URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = filename;
+        document.body.appendChild(link);
+        link.click();
+
+        // 7. 정리
+        document.body.removeChild(link);
+        window.URL.revokeObjectURL(url);
+
+        console.log('📥 UTF-8 텍스트 레포트 다운로드 완료:', filename);
+
+    } catch (error) {
+        console.error('❌ 텍스트 다운로드 실패:', error);
+        throw new Error('텍스트 레포트 다운로드에 실패했습니다');
+    }
+}
+
+function showReportSuccessMessage(result) {
+    // 메시지 내용 구성
+    const filename = result.filename || 'report.txt';
+    const totalPrecedents = result.report_info?.total_precedents || 0;
+    const generationTime = result.generation_time || '0초';
+    const fileSize = result.size ? Math.round(result.size / 1024) : 0;
+    const format = result.format || 'text';
+
+    // 임시 성공 메시지 표시
+    const message = document.createElement('div');
+    message.className = 'fixed top-4 right-4 bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded-lg shadow-lg z-50 max-w-sm';
+    message.innerHTML = `
+        <div class="flex items-start">
+            <svg class="w-5 h-5 mr-2 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
+            </svg>
+            <div class="flex-1 min-w-0">
+                <strong>텍스트 레포트 생성 완료</strong>
+                <div class="text-sm">${filename}</div>
+                <div class="text-xs text-green-600">${totalPrecedents}건 분석 · ${generationTime} · ${fileSize}KB</div>
+                <div class="text-xs mt-1 text-green-600">📄 텍스트 파일 다운로드 완료</div>
+            </div>
+        </div>
+    `;
+
+    document.body.appendChild(message);
+
+    // 3초 후 자동 제거
+    setTimeout(() => {
+        if (message.parentNode) {
+            document.body.removeChild(message);
+        }
+    }, 3000);
+}
+
+function showReportErrorMessage(errorMessage) {
+    // 임시 오류 메시지 표시
+    const message = document.createElement('div');
+    message.className = 'fixed top-4 right-4 bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded-lg shadow-lg z-50';
+    message.innerHTML = `
+        <div class="flex items-center">
+            <svg class="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"></path>
+            </svg>
+            <div>
+                <strong>레포트 생성 실패</strong>
+                <div class="text-sm">${errorMessage}</div>
+            </div>
+        </div>
+    `;
+
+    document.body.appendChild(message);
+
+    // 5초 후 자동 제거
+    setTimeout(() => {
+        if (message.parentNode) {
+            document.body.removeChild(message);
+        }
+    }, 5000);
+}
+
+function getCsrfToken() {
+    // 쿠키에서 CSRF 토큰 가져오기
+    const name = 'csrf_token=';
+    const decodedCookie = decodeURIComponent(document.cookie);
+    const ca = decodedCookie.split(';');
+
+    for (let i = 0; i < ca.length; i++) {
+        let c = ca[i];
+        while (c.charAt(0) == ' ') {
+            c = c.substring(1);
+        }
+        if (c.indexOf(name) == 0) {
+            return c.substring(name.length, c.length);
+        }
+    }
+    return '';
+}
+
+function updateCurrentSearchData(data) {
+    // 현재 검색 데이터 업데이트
+    currentSearchData = {
+        query: data.query || '',
+        results: data.results || [],
+        statistics: {
+            outcomes: data.outcomes || {},
+            categories: data.categories || {},
+            total_results: data.total_results || 0
+        },
+        analysis: data.analysis || {}
+    };
+
+    console.log('📊 검색 데이터 업데이트 완료:', currentSearchData);
+}
+
+function updateReportButtonVisibility() {
+    const button = document.getElementById('save-report-btn');
+    if (currentSearchData.results && currentSearchData.results.length > 0) {
+        button.classList.remove('hidden');
+        button.disabled = false;
+    } else {
+        button.classList.add('hidden');
+        button.disabled = true;
+    }
+}
+
+
+// ============================================================================
+// 🔄 플로우 네비게이션 함수들
+// ============================================================================
+
+function goToDisabilityPrediction() {
+    console.log('🔄 다음 단계로 이동: 장해등급 예측');
+    window.location.href = '/analysis/disability';
+}
+
+function goToCompensationCalculator() {
+    console.log('🔄 바로 이동: 보상금 계산');
+    window.location.href = '/compensation/calculate';
+}
+
+function showNextStepSection() {
+    const nextStepSection = document.getElementById('next-step-section');
+    if (nextStepSection) {
+        nextStepSection.classList.remove('hidden');
+        console.log('✅ 다음 단계 섹션 표시');
+    }
+}
+
+// ============================================================================
+// 🔍 중복 디버깅 기능 제거 완료
+// ============================================================================
+
+
+
+
+
+
+
+</script>
+
+<style>
+/* 추가 스타일 */
+.animate-spin {
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}
+
+/* 판례 검색 결과 가독성 개선 */
+.precedent-content {
+    line-height: 1.6;
+    word-spacing: 0.05em;
+    letter-spacing: 0.025em;
+}
+
+/* 텍스트 줄 제한 */
+.line-clamp-3 {
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+.precedent-card {
+    transition: all 0.2s ease-in-out;
+}
+
+.precedent-card:hover {
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+/* 입력 검증 스타일 */
+.validation-input {
+    transition: border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+.validation-error {
+    border-color: #ef4444 !important;
+    box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.1) !important;
+    background-color: #fef2f2;
+}
+
+.validation-warning {
+    border-color: #f59e0b !important;
+    box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.1) !important;
+    background-color: #fffbeb;
+}
+
+.validation-success {
+    border-color: #10b981 !important;
+    box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.1) !important;
+    background-color: #ecfdf5;
+}
+
+.validation-input:focus {
+    outline: none !important;
+}
+
+/* 검증 메시지 애니메이션 */
+#query-validation-message {
+    transition: all 0.3s ease;
+}
+
+/* 버튼 비활성화 스타일 */
+button:disabled {
+    opacity: 0.6;
+    cursor: not-allowed !important;
+}
+
+/* 검증 메시지 스타일 */
+.text-red-700 {
+    color: #b91c1c;
+}
+
+.text-green-700 {
+    color: #15803d;
+}
+
+.text-amber-700 {
+    color: #b45309;
+}
+
+/* 반응형 개선 */
+@media (max-width: 768px) {
+    #query-validation-examples ul {
+        font-size: 11px;
+    }
+}
+</style>
+
+{% endblock %}

@@ -1,0 +1,351 @@
+<!-- 계산 결과 표시 컴포넌트 (HTMX 응답용) -->
+<div class="bg-white rounded-lg shadow-md border border-gray-200 p-6 mb-8">
+    <div class="flex items-center mb-6">
+        <svg class="h-6 w-6 text-green-600 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+        </svg>
+        <h2 class="text-xl font-semibold text-gray-900">계산 결과</h2>
+    </div>
+
+    <!-- 통상임금 계산 결과 -->
+    {% if result.wage_calculation.method != 'skip' %}
+    <div class="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
+        <h3 class="text-lg font-medium text-blue-900 mb-3">통상임금 계산 결과</h3>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div class="text-center">
+                <div class="text-2xl font-bold text-blue-900">{{ "{:,}".format(result.wage_calculation.hourly_wage) }}원</div>
+                <div class="text-sm text-blue-700">시간급 통상임금</div>
+            </div>
+            <div class="text-center">
+                <div class="text-2xl font-bold text-blue-900">{{ "{:,}".format(result.wage_calculation.daily_wage) }}원</div>
+                <div class="text-sm text-blue-700">일급 통상임금</div>
+            </div>
+            <div class="text-center">
+                <div class="text-2xl font-bold text-blue-900">{{ "{:,}".format(result.wage_calculation.monthly_wage) }}원</div>
+                <div class="text-sm text-blue-700">월급 통상임금</div>
+            </div>
+        </div>
+        <div class="mt-3 text-sm text-blue-800">
+            <strong>계산 방식:</strong> {{ result.wage_calculation.calculation_details }}
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- 보상금 계산 결과 -->
+    <div class="space-y-6">
+        <!-- 휴업급여 -->
+        {% if result.compensation_calculation.calculations.sick_leave_benefit %}
+        <div class="border border-gray-200 rounded-lg p-4">
+            <div class="flex items-center justify-between mb-2">
+                <h4 class="font-medium text-gray-900">{{ result.compensation_calculation.calculations.sick_leave_benefit.name }}</h4>
+                <span class="text-lg font-bold text-green-600">{{ "{:,}".format(result.compensation_calculation.calculations.sick_leave_benefit.daily_amount) }}원/일</span>
+            </div>
+            <p class="text-sm text-gray-600 mb-2">{{ result.compensation_calculation.calculations.sick_leave_benefit.description }}</p>
+            <div class="text-sm text-gray-500">
+                <div><strong>계산식:</strong> {{ result.compensation_calculation.calculations.sick_leave_benefit.calculation }}</div>
+                <div><strong>법적 근거:</strong> {{ result.compensation_calculation.calculations.sick_leave_benefit.legal_basis }}</div>
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- 상병보상연금 -->
+        {% if result.compensation_calculation.calculations.medical_care_pension %}
+        <div class="border border-gray-200 rounded-lg p-4">
+            <div class="flex items-center justify-between mb-2">
+                <h4 class="font-medium text-gray-900">{{ result.compensation_calculation.calculations.medical_care_pension.name }}</h4>
+                <span class="text-lg font-bold text-blue-600">{{ "{:,}".format(result.compensation_calculation.calculations.medical_care_pension.total_amount) }}원/년</span>
+            </div>
+            <p class="text-sm text-gray-600 mb-2">{{ result.compensation_calculation.calculations.medical_care_pension.description }}</p>
+            <div class="text-sm text-gray-500">
+                <div><strong>등급:</strong> {{ result.compensation_calculation.calculations.medical_care_pension.grade }} ({{ result.compensation_calculation.calculations.medical_care_pension.days }}일)</div>
+                <div><strong>계산식:</strong> {{ result.compensation_calculation.calculations.medical_care_pension.calculation }}</div>
+                <div><strong>법적 근거:</strong> {{ result.compensation_calculation.calculations.medical_care_pension.legal_basis }}</div>
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- 장해급여 -->
+        {% if result.compensation_calculation.calculations.disability_benefit and result.compensation_calculation.calculations.disability_benefit.grade %}
+        <div class="border border-gray-200 rounded-lg p-4">
+            <div class="flex items-center justify-between mb-2">
+                <h4 class="font-medium text-gray-900">{{ result.compensation_calculation.calculations.disability_benefit.name }}</h4>
+                {% if result.compensation_calculation.calculations.disability_benefit.payment_type == '연금' and result.compensation_calculation.calculations.disability_benefit.annual_amount is defined %}
+                    <span class="text-lg font-bold text-purple-600">
+                        {{ "{:,}".format(result.compensation_calculation.calculations.disability_benefit.annual_amount) }}원/년
+                        <span class="text-sm">({{ "{:,}".format(result.compensation_calculation.calculations.disability_benefit.monthly_amount) }}원/월)</span>
+                    </span>
+                {% elif result.compensation_calculation.calculations.disability_benefit.lump_sum is defined %}
+                    <span class="text-lg font-bold text-orange-600">{{ "{:,}".format(result.compensation_calculation.calculations.disability_benefit.lump_sum) }}원</span>
+                {% else %}
+                    <span class="text-lg font-bold text-gray-500">계산 불가</span>
+                {% endif %}
+            </div>
+            <p class="text-sm text-gray-600 mb-2">{{ result.compensation_calculation.calculations.disability_benefit.description }}</p>
+            <div class="text-sm text-gray-500">
+                {% if result.compensation_calculation.calculations.disability_benefit.grade %}
+                <div><strong>장해등급:</strong> {{ result.compensation_calculation.calculations.disability_benefit.grade }}</div>
+                {% endif %}
+                {% if result.compensation_calculation.calculations.disability_benefit.payment_type %}
+                <div><strong>지급방식:</strong> {{ result.compensation_calculation.calculations.disability_benefit.payment_type }}</div>
+                {% endif %}
+                <div><strong>계산식:</strong> {{ result.compensation_calculation.calculations.disability_benefit.calculation }}</div>
+                {% if result.compensation_calculation.calculations.disability_benefit.legal_basis %}
+                <div><strong>법적 근거:</strong> {{ result.compensation_calculation.calculations.disability_benefit.legal_basis }}</div>
+                {% endif %}
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- 유족급여 -->
+        {% if result.compensation_calculation.calculations.survivor_benefit %}
+        <div class="border border-gray-200 rounded-lg p-4">
+            <div class="flex items-center justify-between mb-2">
+                <h4 class="font-medium text-gray-900">{{ result.compensation_calculation.calculations.survivor_benefit.name }}</h4>
+                <span class="text-lg font-bold text-red-600">
+                    {{ "{:,}".format(result.compensation_calculation.calculations.survivor_benefit.annual_amount) }}원/년
+                    <span class="text-sm">({{ "{:,}".format(result.compensation_calculation.calculations.survivor_benefit.monthly_amount) }}원/월)</span>
+                </span>
+            </div>
+            <p class="text-sm text-gray-600 mb-2">{{ result.compensation_calculation.calculations.survivor_benefit.description }}</p>
+            <div class="text-sm text-gray-500">
+                <div><strong>유족 수:</strong> {{ result.compensation_calculation.calculations.survivor_benefit.survivors_count }}명</div>
+                <div><strong>지급률:</strong> {{ result.compensation_calculation.calculations.survivor_benefit.total_rate }} (기본 {{ result.compensation_calculation.calculations.survivor_benefit.base_rate }} + 가산 {{ result.compensation_calculation.calculations.survivor_benefit.additional_rate }})</div>
+                <div><strong>계산식:</strong> {{ result.compensation_calculation.calculations.survivor_benefit.calculation }}</div>
+                <div><strong>법적 근거:</strong> {{ result.compensation_calculation.calculations.survivor_benefit.legal_basis }}</div>
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- 장례비 -->
+        {% if result.compensation_calculation.calculations.funeral_benefit %}
+        <div class="border border-gray-200 rounded-lg p-4">
+            <div class="flex items-center justify-between mb-2">
+                <h4 class="font-medium text-gray-900">{{ result.compensation_calculation.calculations.funeral_benefit.name }}</h4>
+                <span class="text-lg font-bold text-gray-600">{{ "{:,}".format(result.compensation_calculation.calculations.funeral_benefit.total_amount) }}원</span>
+            </div>
+            <p class="text-sm text-gray-600 mb-2">{{ result.compensation_calculation.calculations.funeral_benefit.description }}</p>
+            <div class="text-sm text-gray-500">
+                <div><strong>계산식:</strong> {{ result.compensation_calculation.calculations.funeral_benefit.calculation }}</div>
+                <div><strong>법적 근거:</strong> {{ result.compensation_calculation.calculations.funeral_benefit.legal_basis }}</div>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- 계산 요약 -->
+    {% if result.compensation_calculation.summary %}
+    <div class="mt-6 bg-gray-50 border border-gray-200 rounded-lg p-4">
+        <h3 class="text-lg font-medium text-gray-900 mb-3">계산 요약</h3>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+                <div class="text-2xl font-bold text-gray-900">{{ "{:,}".format(result.compensation_calculation.summary.total_estimated_amount) }}원</div>
+                <div class="text-sm text-gray-600">총 예상 보상금</div>
+            </div>
+            <div class="text-sm text-gray-600">
+                <div><strong>계산 기준일:</strong> {{ result.compensation_calculation.summary.calculation_date }}</div>
+                <div><strong>적용 기준:</strong> {{ result.compensation_calculation.summary.year_standard }}년</div>
+                <div><strong>계산 시각:</strong> {{ result.calculation_metadata.calculated_at[:19] | replace('T', ' ') }}</div>
+            </div>
+        </div>
+        <div class="mt-3 p-3 bg-yellow-50 border border-yellow-200 rounded text-sm text-yellow-800">
+            <strong>주의사항:</strong> {{ result.compensation_calculation.summary.notes }}
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- 액션 버튼 -->
+    <div class="mt-6 flex justify-center">
+        <button onclick="resetCalculator()" class="inline-flex items-center px-6 py-3 bg-blue-600 text-white text-lg font-semibold rounded-lg hover:bg-blue-700 transition-colors shadow-md">
+            <svg class="h-5 w-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
+            </svg>
+            새로 계산하기
+        </button>
+    </div>
+</div>
+
+<!-- 노무사 추천 섹션 -->
+{% if result.recommended_lawyers and result.recommended_lawyers|length > 0 %}
+<div class="bg-white rounded-lg shadow-md border border-gray-200 p-6 mt-8">
+    <div class="flex items-center mb-6">
+        <svg class="h-6 w-6 text-green-600 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9a2.25 2.25 0 11-4.5 0 2.25 2.25 0 014.5 0z"></path>
+        </svg>
+        <h2 class="text-xl font-semibold text-gray-900">추천 노무사</h2>
+        <span class="ml-2 text-sm text-gray-500">{{ result.injury_type }}에 특화된 전문가</span>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+        {% for lawyer in result.recommended_lawyers %}
+        <div class="bg-white border border-gray-200 rounded-lg p-4 hover:shadow-lg transition-shadow cursor-pointer"
+             onclick="window.location.href='/lawyers/{{ lawyer.id }}'">
+            <!-- 노무사 프로필 -->
+            <div class="flex items-center mb-4">
+                <!-- 아바타 -->
+                <div class="w-12 h-12 bg-gray-300 rounded-full flex items-center justify-center mr-3">
+                    <svg class="w-8 h-8 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
+                    </svg>
+                </div>
+
+                <!-- 기본 정보 -->
+                <div class="flex-1">
+                    <h3 class="font-semibold text-gray-900">{{ lawyer.office_name }}</h3>
+                    <p class="text-sm text-gray-600">{{ lawyer.office_name.replace(' 노무사 사무소', '') }}</p>
+                </div>
+
+                <!-- 온라인/오프라인 상태 -->
+                <div class="flex flex-col items-end">
+                    <span class="inline-flex items-center px-2 py-1 text-xs font-medium rounded-full
+                                 {% if lawyer.is_verified %}bg-green-100 text-green-800{% else %}bg-gray-100 text-gray-800{% endif %}">
+                        {% if lawyer.is_verified %}인증됨{% else %}미인증{% endif %}
+                    </span>
+                </div>
+            </div>
+
+            <!-- 전문분야 -->
+            <div class="mb-3">
+                <p class="text-sm font-medium text-gray-700 mb-2">전문분야</p>
+                <div class="flex flex-wrap gap-1">
+                    {% for specialty in lawyer.specialties[:2] %}
+                    <span class="inline-flex items-center px-2 py-1 text-xs font-medium bg-blue-100 text-blue-800 rounded-md">
+                        {{ specialty }}
+                    </span>
+                    {% endfor %}
+                    {% if lawyer.specialties|length > 2 %}
+                    <span class="inline-flex items-center px-2 py-1 text-xs font-medium bg-gray-100 text-gray-600 rounded-md">
+                        +{{ lawyer.specialties|length - 2 }}
+                    </span>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- 성과 지표 -->
+            <div class="mb-4">
+                <div class="flex justify-between text-sm">
+                    <div class="text-center">
+                        <p class="font-semibold text-gray-900">{{ lawyer.success_rate|round(1) }}%</p>
+                        <p class="text-gray-600">성공률</p>
+                    </div>
+                    <div class="text-center">
+                        <p class="font-semibold text-gray-900">{{ lawyer.experience_years }}년</p>
+                        <p class="text-gray-600">경력</p>
+                    </div>
+                    <div class="text-center">
+                        <p class="font-semibold text-gray-900">{% if lawyer.consultation_fee > 0 %}{{ "{:,}".format(lawyer.consultation_fee) }}원{% else %}무료{% endif %}</p>
+                        <p class="text-gray-600">상담료</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 액션 버튼 -->
+            <div class="flex gap-2">
+                <button onclick="event.stopPropagation(); contactLawyer('{{ lawyer.id }}')"
+                        class="flex-1 bg-blue-600 text-white px-3 py-2 text-sm rounded-md hover:bg-blue-700 transition-colors">
+                    상담 신청
+                </button>
+                <button onclick="event.stopPropagation(); window.location.href='/lawyers/{{ lawyer.id }}'"
+                        class="bg-gray-200 text-gray-700 px-3 py-2 text-sm rounded-md hover:bg-gray-300 transition-colors">
+                    상세보기
+                </button>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+
+    <!-- 더 보기 링크 -->
+    <div class="mt-6 text-center">
+        <a href="/lawyers?specialties={{ result.injury_type }}"
+           class="inline-flex items-center text-blue-600 hover:text-blue-800 text-sm font-medium">
+            {{ result.injury_type }} 전문 노무사 더 보기
+            <svg class="ml-1 w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+            </svg>
+        </a>
+    </div>
+</div>
+{% endif %}
+
+<script>
+// 결과 복사 기능
+function copyResult() {
+    {% if result.wage_calculation.method != 'skip' %}
+    const wageText = `통상임금: 시급 {{ "{:,}".format(result.wage_calculation.hourly_wage) }}원, 일급 {{ "{:,}".format(result.wage_calculation.daily_wage) }}원\n`;
+    {% else %}
+    const wageText = '';
+    {% endif %}
+
+    let resultText = `SANZERO 산재 보상금 계산 결과\n`;
+    resultText += `계산일: {{ result.calculation_metadata.calculated_at[:10] }}\n\n`;
+    resultText += wageText;
+
+    {% if result.compensation_calculation.calculations.sick_leave_benefit %}
+    resultText += `휴업급여: {{ "{:,}".format(result.compensation_calculation.calculations.sick_leave_benefit.daily_amount) }}원/일\n`;
+    {% endif %}
+
+    {% if result.compensation_calculation.calculations.disability_benefit and result.compensation_calculation.calculations.disability_benefit.grade %}
+    {% if result.compensation_calculation.calculations.disability_benefit.payment_type == '연금' and result.compensation_calculation.calculations.disability_benefit.annual_amount is defined %}
+    resultText += `장해급여({{ result.compensation_calculation.calculations.disability_benefit.grade }}): {{ "{:,}".format(result.compensation_calculation.calculations.disability_benefit.annual_amount) }}원/년\n`;
+    {% elif result.compensation_calculation.calculations.disability_benefit.lump_sum is defined %}
+    resultText += `장해급여({{ result.compensation_calculation.calculations.disability_benefit.grade }}): {{ "{:,}".format(result.compensation_calculation.calculations.disability_benefit.lump_sum) }}원\n`;
+    {% endif %}
+    {% endif %}
+
+    {% if result.compensation_calculation.calculations.survivor_benefit %}
+    resultText += `유족급여: {{ "{:,}".format(result.compensation_calculation.calculations.survivor_benefit.annual_amount) }}원/년\n`;
+    {% endif %}
+
+    {% if result.compensation_calculation.calculations.funeral_benefit %}
+    resultText += `장례비: {{ "{:,}".format(result.compensation_calculation.calculations.funeral_benefit.total_amount) }}원\n`;
+    {% endif %}
+
+    {% if result.compensation_calculation.summary %}
+    resultText += `\n총 예상 보상금: {{ "{:,}".format(result.compensation_calculation.summary.total_estimated_amount) }}원\n`;
+    resultText += `\n※ 계산 결과는 참고용이며, 실제 지급액은 심사 결과에 따라 달라질 수 있습니다.`;
+    {% endif %}
+
+    navigator.clipboard.writeText(resultText).then(() => {
+        showToast('계산 결과가 클립보드에 복사되었습니다.', 'success');
+    }).catch(() => {
+        showToast('복사에 실패했습니다.', 'error');
+    });
+}
+
+// 계산기 초기화
+function resetCalculator() {
+    document.getElementById('calculatorForm').reset();
+    document.getElementById('calculationResult').classList.add('hidden');
+    toggleWageMethod();
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+// 노무사 상담 신청
+function contactLawyer(lawyerId) {
+    // 상담 신청 페이지로 이동 (노무사 ID와 함께)
+    window.location.href = `/lawyers/booking?lawyer_id=${lawyerId}`;
+}
+</script>
+
+<style>
+/* 인쇄용 스타일 */
+@media print {
+    body * {
+        visibility: hidden;
+    }
+
+    #calculationResult, #calculationResult * {
+        visibility: visible;
+    }
+
+    #calculationResult {
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 100%;
+    }
+
+    button {
+        display: none !important;
+    }
+}
+</style>

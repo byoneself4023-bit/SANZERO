@@ -1,0 +1,359 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- 상담 예약 페이지 -->
+<page name="lawyers-booking" title="상담 예약 - SANZERO">
+  <layout type="main">
+    <!-- 페이지 헤더 -->
+    <section class="page-header">
+      <container class="max-w-4xl mx-auto px-4 py-8">
+        <breadcrumb>
+          <link href="/">홈</link>
+          <link href="/lawyers">노무사 서비스</link>
+          <link href="/lawyers/{lawyer_id}">김노무사</link>
+          <current>상담 예약</current>
+        </breadcrumb>
+
+        <heading level="1" class="text-3xl font-bold text-gray-900 mb-2">
+          상담 예약
+        </heading>
+        <text class="text-gray-600">
+          전문 노무사와의 상담 일정을 예약하세요
+        </text>
+      </container>
+    </section>
+
+    <container class="max-w-4xl mx-auto px-4">
+      <grid class="grid-cols-1 lg:grid-cols-3 gap-8">
+        <!-- 예약 폼 -->
+        <main-content class="lg:col-span-2">
+          <card>
+            <header class="mb-6">
+              <title class="text-lg font-semibold">예약 정보 입력</title>
+              <description>상담 예약에 필요한 정보를 입력해주세요</description>
+            </header>
+
+            <form id="booking-form" action="/lawyers/consultations" method="POST">
+              <input type="hidden" name="lawyer_id" value="{lawyer_id}" />
+
+              <!-- 상담 유형 선택 -->
+              <form-section class="mb-6">
+                <field>
+                  <label required="true">상담 유형</label>
+                  <radio-group name="consultation_type" required>
+                    <radio-option value="video" class="border rounded-lg p-4 flex items-center">
+                      <radio-input value="video" />
+                      <radio-content class="ml-3 flex-1">
+                        <title class="font-medium">화상 상담</title>
+                        <description class="text-sm text-gray-600">온라인 화상 통화 (30분)</description>
+                        <price class="text-sm font-semibold text-primary-600">100,000원</price>
+                      </radio-content>
+                      <icon name="video" class="text-blue-500" />
+                    </radio-option>
+
+                    <radio-option value="visit" class="border rounded-lg p-4 flex items-center">
+                      <radio-input value="visit" />
+                      <radio-content class="ml-3 flex-1">
+                        <title class="font-medium">사무소 방문</title>
+                        <description class="text-sm text-gray-600">사무소에서 대면 상담 (1시간)</description>
+                        <price class="text-sm font-semibold text-primary-600">100,000원</price>
+                      </radio-content>
+                      <icon name="building" class="text-green-500" />
+                    </radio-option>
+
+                    <radio-option value="phone" class="border rounded-lg p-4 flex items-center">
+                      <radio-input value="phone" />
+                      <radio-content class="ml-3 flex-1">
+                        <title class="font-medium">전화 상담</title>
+                        <description class="text-sm text-gray-600">전화 통화 상담 (20분)</description>
+                        <price class="text-sm font-semibold text-primary-600">50,000원</price>
+                      </radio-content>
+                      <icon name="phone" class="text-purple-500" />
+                    </radio-option>
+                  </radio-group>
+                </field>
+              </form-section>
+
+              <!-- 날짜 및 시간 선택 -->
+              <form-section class="mb-6">
+                <grid class="grid-cols-1 md:grid-cols-2 gap-6">
+                  <field>
+                    <label required="true">희망 날짜</label>
+                    <input name="preferred_date" type="date" required min="{today}" />
+                  </field>
+
+                  <field>
+                    <label required="true">희망 시간</label>
+                    <select name="preferred_time" required>
+                      <option value="">시간 선택</option>
+                      <option value="09:00">09:00</option>
+                      <option value="10:00">10:00</option>
+                      <option value="11:00">11:00</option>
+                      <option value="14:00">14:00</option>
+                      <option value="15:00">15:00</option>
+                      <option value="16:00">16:00</option>
+                      <option value="17:00">17:00</option>
+                    </select>
+                  </field>
+                </grid>
+
+                <!-- 예약 가능 시간 표시 -->
+                <availability-calendar class="mt-4 p-4 bg-gray-50 rounded-lg">
+                  <title class="font-medium mb-3">예약 가능한 시간</title>
+                  <calendar-grid class="grid grid-cols-7 gap-2 text-center">
+                    <calendar-header class="text-sm font-medium text-gray-600">일</calendar-header>
+                    <calendar-header class="text-sm font-medium text-gray-600">월</calendar-header>
+                    <calendar-header class="text-sm font-medium text-gray-600">화</calendar-header>
+                    <calendar-header class="text-sm font-medium text-gray-600">수</calendar-header>
+                    <calendar-header class="text-sm font-medium text-gray-600">목</calendar-header>
+                    <calendar-header class="text-sm font-medium text-gray-600">금</calendar-header>
+                    <calendar-header class="text-sm font-medium text-gray-600">토</calendar-header>
+
+                    <!-- 예시 날짜들 -->
+                    <calendar-date class="p-2 text-gray-400">29</calendar-date>
+                    <calendar-date class="p-2 text-gray-400">30</calendar-date>
+                    <calendar-date class="p-2 text-gray-400">31</calendar-date>
+                    <calendar-date class="p-2 bg-white border rounded hover:bg-primary-50 cursor-pointer">1</calendar-date>
+                    <calendar-date class="p-2 bg-white border rounded hover:bg-primary-50 cursor-pointer">2</calendar-date>
+                    <calendar-date class="p-2 bg-white border rounded hover:bg-primary-50 cursor-pointer">3</calendar-date>
+                    <calendar-date class="p-2 bg-gray-100 text-gray-400 rounded">4</calendar-date>
+                  </calendar-grid>
+
+                  <legend class="mt-3 flex items-center gap-4 text-xs">
+                    <legend-item class="flex items-center">
+                      <color-box class="w-3 h-3 bg-white border rounded mr-1"></color-box>
+                      <text>예약 가능</text>
+                    </legend-item>
+                    <legend-item class="flex items-center">
+                      <color-box class="w-3 h-3 bg-gray-100 rounded mr-1"></color-box>
+                      <text>예약 불가</text>
+                    </legend-item>
+                    <legend-item class="flex items-center">
+                      <color-box class="w-3 h-3 bg-primary-100 rounded mr-1"></color-box>
+                      <text>선택됨</text>
+                    </legend-item>
+                  </legend>
+                </availability-calendar>
+              </form-section>
+
+              <!-- 상담 내용 -->
+              <form-section class="mb-6">
+                <field>
+                  <label required="true">상담 주제</label>
+                  <select name="consultation_topic" required>
+                    <option value="">선택하세요</option>
+                    <option value="industrial_accident">산업재해 보상</option>
+                    <option value="labor_dispute">노동 분쟁</option>
+                    <option value="workplace_safety">산업안전보건</option>
+                    <option value="wrongful_termination">부당해고</option>
+                    <option value="wage_claim">임금 체불</option>
+                    <option value="other">기타</option>
+                  </select>
+                </field>
+
+                <field>
+                  <label>관련 신청서</label>
+                  <select name="related_application_id">
+                    <option value="">해당없음</option>
+                    <option value="app-001">APP-2024-001 (작업장 낙상사고)</option>
+                    <option value="app-002">APP-2024-002 (기계 조작 중 절단)</option>
+                  </select>
+                  <help-text>기존에 제출한 보상금 신청서가 있다면 선택하세요</help-text>
+                </field>
+
+                <field>
+                  <label required="true">상담 내용</label>
+                  <textarea name="consultation_details" rows="4" required
+                            placeholder="상담받고 싶은 내용을 구체적으로 작성해주세요..."></textarea>
+                </field>
+
+                <field>
+                  <label>우선 검토 요청사항</label>
+                  <textarea name="priority_items" rows="3"
+                            placeholder="특별히 우선적으로 검토받고 싶은 부분이 있다면 작성해주세요..."></textarea>
+                </field>
+              </form-section>
+
+              <!-- 개인정보 -->
+              <form-section class="mb-6">
+                <grid class="grid-cols-1 md:grid-cols-2 gap-6">
+                  <field>
+                    <label required="true">연락처</label>
+                    <input name="contact_phone" type="tel" placeholder="010-0000-0000" required />
+                  </field>
+
+                  <field>
+                    <label required="true">이메일</label>
+                    <input name="contact_email" type="email" placeholder="your@example.com" required />
+                  </field>
+                </grid>
+
+                <field>
+                  <label>추가 연락 방법</label>
+                  <input name="additional_contact" type="text" placeholder="카카오톡 ID, 메신저 등" />
+                </field>
+              </form-section>
+
+              <!-- 결제 정보 -->
+              <form-section class="mb-6">
+                <payment-summary class="p-4 bg-blue-50 rounded-lg border-l-4 border-blue-500">
+                  <title class="font-medium text-blue-900 mb-2">결제 정보</title>
+                  <payment-item class="flex justify-between items-center">
+                    <label class="text-blue-700">상담료</label>
+                    <amount class="font-semibold text-blue-900" id="consultation-fee">100,000원</amount>
+                  </payment-item>
+                  <payment-note class="text-sm text-blue-600 mt-2">
+                    예약 확정 후 결제가 진행됩니다
+                  </payment-note>
+                </payment-summary>
+              </form-section>
+
+              <!-- 약관 동의 -->
+              <form-section class="mb-6">
+                <agreement-section>
+                  <checkbox name="agree_terms" required>
+                    상담 서비스 이용약관에 동의합니다
+                  </checkbox>
+                  <checkbox name="agree_privacy" required>
+                    개인정보 수집 및 이용에 동의합니다
+                  </checkbox>
+                  <checkbox name="agree_consultation" required>
+                    상담 내용 기록 및 보관에 동의합니다
+                  </checkbox>
+                  <checkbox name="agree_marketing">
+                    마케팅 활용 동의 (선택)
+                  </checkbox>
+                </agreement-section>
+              </form-section>
+
+              <!-- 제출 버튼 -->
+              <form-actions>
+                <button type="submit" class="primary w-full">
+                  상담 예약 신청하기
+                </button>
+              </form-actions>
+            </form>
+          </card>
+        </main-content>
+
+        <!-- 사이드바 정보 -->
+        <sidebar class="space-y-6">
+          <!-- 노무사 정보 요약 -->
+          <card class="sticky top-6">
+            <header class="mb-4">
+              <title class="text-lg font-semibold">상담 노무사</title>
+            </header>
+
+            <lawyer-summary class="flex items-center mb-4">
+              <avatar class="w-12 h-12 bg-gray-300 rounded-full mr-4"></avatar>
+              <info>
+                <name class="font-medium text-gray-900">김노무사</name>
+                <office class="text-sm text-gray-600">서울 노무법인 ABC</office>
+                <rating class="text-sm text-yellow-600">★ 4.8 (247건)</rating>
+              </info>
+            </lawyer-summary>
+
+            <specialties class="mb-4">
+              <label class="text-sm font-medium text-gray-700 mb-2 block">전문 분야</label>
+              <tags class="flex flex-wrap gap-2">
+                <tag class="bg-blue-100 text-blue-800 px-2 py-1 rounded text-xs">산업재해</tag>
+                <tag class="bg-green-100 text-green-800 px-2 py-1 rounded text-xs">근로기준법</tag>
+                <tag class="bg-purple-100 text-purple-800 px-2 py-1 rounded text-xs">산업안전</tag>
+              </tags>
+            </specialties>
+
+            <stats class="grid grid-cols-2 gap-4 text-center">
+              <stat-item>
+                <value class="text-lg font-bold text-primary-600">8년</value>
+                <label class="text-xs text-gray-600">경력</label>
+              </stat-item>
+              <stat-item>
+                <value class="text-lg font-bold text-green-600">94%</value>
+                <label class="text-xs text-gray-600">승소율</label>
+              </stat-item>
+            </stats>
+          </card>
+
+          <!-- 예약 가이드 -->
+          <card>
+            <header class="mb-4">
+              <title class="text-lg font-semibold">예약 안내</title>
+            </header>
+
+            <guide-content class="space-y-4">
+              <guide-section>
+                <title class="font-medium mb-2">예약 절차</title>
+                <steps class="text-sm text-gray-600 space-y-1">
+                  <step>1. 상담 유형 및 일정 선택</step>
+                  <step>2. 상담 내용 작성</step>
+                  <step>3. 예약 신청 제출</step>
+                  <step>4. 노무사 승인 대기</step>
+                  <step>5. 상담료 결제</step>
+                  <step>6. 상담 진행</step>
+                </steps>
+              </guide-section>
+
+              <guide-section>
+                <title class="font-medium mb-2">상담 준비물</title>
+                <checklist class="text-sm text-gray-600 space-y-1">
+                  <item>• 관련 서류 (진단서, 사고경위서 등)</item>
+                  <item>• 신분증</item>
+                  <item>• 질문 사항 정리</item>
+                  <item>• 기존 보상금 신청서 (해당시)</item>
+                </checklist>
+              </guide-section>
+
+              <guide-section>
+                <title class="font-medium mb-2">취소 정책</title>
+                <policy class="text-sm text-gray-600">
+                  <item>• 상담 24시간 전: 전액 환불</item>
+                  <item>• 상담 당일 취소: 50% 환불</item>
+                  <item>• 노쇼: 환불 불가</item>
+                </policy>
+              </guide-section>
+            </guide-content>
+          </card>
+
+          <!-- 연락처 정보 -->
+          <card>
+            <header class="mb-4">
+              <title class="text-lg font-semibold">연락처</title>
+            </header>
+
+            <contact-info class="space-y-3">
+              <contact-item class="flex items-center">
+                <icon name="phone" class="text-gray-400 mr-3" />
+                <content>
+                  <label class="font-medium">전화</label>
+                  <value class="text-gray-700">02-1234-5678</value>
+                </content>
+              </contact-item>
+
+              <contact-item class="flex items-center">
+                <icon name="mail" class="text-gray-400 mr-3" />
+                <content>
+                  <label class="font-medium">이메일</label>
+                  <value class="text-gray-700">kim@abclaw.co.kr</value>
+                </content>
+              </contact-item>
+
+              <contact-item class="flex items-center">
+                <icon name="map-pin" class="text-gray-400 mr-3" />
+                <content>
+                  <label class="font-medium">주소</label>
+                  <value class="text-gray-700">서울시 서초구 법조로 123</value>
+                </content>
+              </contact-item>
+            </contact-info>
+
+            <emergency-contact class="mt-4 p-3 bg-red-50 border border-red-200 rounded">
+              <title class="font-medium text-red-800 text-sm">긴급 상담</title>
+              <description class="text-red-600 text-xs">
+                응급 상황 시 24시간 상담 가능<br />
+                긴급 연락처: 010-1234-5678
+              </description>
+            </emergency-contact>
+          </card>
+        </sidebar>
+      </grid>
+    </container>
+  </layout>
+</page>

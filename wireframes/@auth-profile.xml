@@ -1,0 +1,580 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- 프로필 관리 페이지 -->
+<page name="auth-profile" title="프로필 관리 - SANZERO">
+  <layout type="main">
+    <!-- 페이지 헤더 -->
+    <section class="page-header">
+      <container class="max-w-4xl mx-auto px-4 py-8">
+        <breadcrumb>
+          <link href="/">홈</link>
+          <current>프로필 관리</current>
+        </breadcrumb>
+
+        <heading level="1" class="text-3xl font-bold text-gray-900 mb-2">
+          프로필 관리
+        </heading>
+        <text class="text-gray-600">
+          개인정보 및 계정 설정을 관리하세요
+        </text>
+      </container>
+    </section>
+
+    <container class="max-w-4xl mx-auto px-4">
+      <grid class="grid-cols-1 lg:grid-cols-4 gap-8">
+        <!-- 사이드바 네비게이션 -->
+        <sidebar class="lg:col-span-1">
+          <nav class="space-y-1">
+            <nav-item href="#basic-info" class="bg-primary-50 text-primary-700 group flex items-center px-3 py-2 text-sm font-medium rounded-md">
+              <icon name="user" class="text-primary-500 mr-3 h-5 w-5" />
+              기본 정보
+            </nav-item>
+
+            <nav-item href="#security" class="text-gray-700 hover:text-gray-900 hover:bg-gray-50 group flex items-center px-3 py-2 text-sm font-medium rounded-md">
+              <icon name="shield" class="text-gray-400 mr-3 h-5 w-5" />
+              보안 설정
+            </nav-item>
+
+            <nav-item href="#work-info" class="text-gray-700 hover:text-gray-900 hover:bg-gray-50 group flex items-center px-3 py-2 text-sm font-medium rounded-md">
+              <icon name="briefcase" class="text-gray-400 mr-3 h-5 w-5" />
+              근무 정보
+            </nav-item>
+
+            <conditional condition="user_type_lawyer">
+              <nav-item href="#lawyer-info" class="text-gray-700 hover:text-gray-900 hover:bg-gray-50 group flex items-center px-3 py-2 text-sm font-medium rounded-md">
+                <icon name="scale" class="text-gray-400 mr-3 h-5 w-5" />
+                노무사 정보
+              </nav-item>
+            </conditional>
+
+            <nav-item href="#notifications" class="text-gray-700 hover:text-gray-900 hover:bg-gray-50 group flex items-center px-3 py-2 text-sm font-medium rounded-md">
+              <icon name="bell" class="text-gray-400 mr-3 h-5 w-5" />
+              알림 설정
+            </nav-item>
+
+            <nav-item href="#danger-zone" class="text-red-700 hover:text-red-900 hover:bg-red-50 group flex items-center px-3 py-2 text-sm font-medium rounded-md">
+              <icon name="alert-triangle" class="text-red-500 mr-3 h-5 w-5" />
+              계정 관리
+            </nav-item>
+          </nav>
+        </sidebar>
+
+        <!-- 메인 컨텐츠 -->
+        <main-content class="lg:col-span-3 space-y-8">
+          <!-- 기본 정보 -->
+          <section id="basic-info">
+            <card>
+              <header class="mb-6">
+                <title class="text-lg font-semibold">기본 정보</title>
+                <description class="text-gray-600">계정의 기본 정보를 관리하세요</description>
+              </header>
+
+              <form action="/auth/profile/basic" method="POST">
+                <input type="hidden" name="csrf_token" value="{csrf_token}" />
+
+                <form-section class="space-y-6">
+                  <!-- 프로필 이미지 -->
+                  <field>
+                    <label class="block text-sm font-medium text-gray-700">프로필 이미지</label>
+                    <profile-image-upload class="mt-2 flex items-center space-x-4">
+                      <current-avatar class="h-16 w-16 bg-gray-300 rounded-full flex items-center justify-center">
+                        <icon name="user" class="h-8 w-8 text-gray-600" />
+                      </current-avatar>
+                      <upload-actions class="space-y-2">
+                        <button type="button" class="secondary text-sm">
+                          이미지 변경
+                        </button>
+                        <button type="button" class="text-sm text-red-600 hover:text-red-700">
+                          삭제
+                        </button>
+                      </upload-actions>
+                    </profile-image-upload>
+                  </field>
+
+                  <grid class="grid-cols-1 md:grid-cols-2 gap-6">
+                    <!-- 사용자명 -->
+                    <field>
+                      <label class="block text-sm font-medium text-gray-700">사용자명</label>
+                      <input
+                        name="username"
+                        type="text"
+                        value="{current_username}"
+                        required
+                        class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500"
+                      />
+                    </field>
+
+                    <!-- 이메일 -->
+                    <field>
+                      <label class="block text-sm font-medium text-gray-700">이메일</label>
+                      <input
+                        name="email"
+                        type="email"
+                        value="{current_email}"
+                        required
+                        class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500"
+                      />
+                      <help-text class="mt-1 text-sm text-gray-500">
+                        이메일 변경 시 인증이 필요합니다
+                      </help-text>
+                    </field>
+
+                    <!-- 연락처 -->
+                    <field>
+                      <label class="block text-sm font-medium text-gray-700">연락처</label>
+                      <input
+                        name="phone"
+                        type="tel"
+                        value="{current_phone}"
+                        class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500"
+                      />
+                    </field>
+
+                    <!-- 생년월일 -->
+                    <field>
+                      <label class="block text-sm font-medium text-gray-700">생년월일</label>
+                      <input
+                        name="birth_date"
+                        type="date"
+                        value="{current_birth_date}"
+                        class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500"
+                      />
+                    </field>
+
+                    <!-- 성별 -->
+                    <field>
+                      <label class="block text-sm font-medium text-gray-700">성별</label>
+                      <select
+                        name="gender"
+                        class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500"
+                      >
+                        <option value="">선택하세요</option>
+                        <option value="male">남성</option>
+                        <option value="female">여성</option>
+                        <option value="other">기타</option>
+                      </select>
+                    </field>
+                  </grid>
+
+                  <!-- 주소 -->
+                  <field>
+                    <label class="block text-sm font-medium text-gray-700">주소</label>
+                    <textarea
+                      name="address"
+                      rows="2"
+                      value="{current_address}"
+                      class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500"
+                      placeholder="서울시 강남구 테스트동 123번지"
+                    ></textarea>
+                  </field>
+
+                  <form-actions class="flex justify-end">
+                    <button type="submit" class="primary">
+                      변경 사항 저장
+                    </button>
+                  </form-actions>
+                </form-section>
+              </form>
+            </card>
+          </section>
+
+          <!-- 보안 설정 -->
+          <section id="security">
+            <card>
+              <header class="mb-6">
+                <title class="text-lg font-semibold">보안 설정</title>
+                <description class="text-gray-600">비밀번호 및 보안 설정을 관리하세요</description>
+              </header>
+
+              <!-- 비밀번호 변경 -->
+              <form action="/auth/profile/password" method="POST" class="mb-8">
+                <input type="hidden" name="csrf_token" value="{csrf_token}" />
+
+                <form-section class="space-y-4">
+                  <field>
+                    <label class="block text-sm font-medium text-gray-700">현재 비밀번호</label>
+                    <input
+                      name="current_password"
+                      type="password"
+                      required
+                      class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500"
+                    />
+                  </field>
+
+                  <field>
+                    <label class="block text-sm font-medium text-gray-700">새 비밀번호</label>
+                    <input
+                      name="new_password"
+                      type="password"
+                      required
+                      class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500"
+                    />
+                  </field>
+
+                  <field>
+                    <label class="block text-sm font-medium text-gray-700">새 비밀번호 확인</label>
+                    <input
+                      name="new_password_confirm"
+                      type="password"
+                      required
+                      class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500"
+                    />
+                  </field>
+
+                  <form-actions class="flex justify-end">
+                    <button type="submit" class="primary">
+                      비밀번호 변경
+                    </button>
+                  </form-actions>
+                </form-section>
+              </form>
+
+              <!-- 2단계 인증 -->
+              <two-factor-auth class="border-t pt-6">
+                <header class="mb-4">
+                  <title class="font-medium">2단계 인증</title>
+                  <description class="text-sm text-gray-600">계정 보안을 강화하세요</description>
+                </header>
+
+                <auth-status class="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
+                  <status-info>
+                    <status-label class="font-medium text-gray-900">SMS 인증</status-label>
+                    <status-description class="text-sm text-gray-600">
+                      휴대폰으로 인증 코드를 받습니다
+                    </status-description>
+                  </status-info>
+                  <toggle-button class="bg-gray-300 relative inline-flex h-6 w-11 items-center rounded-full">
+                    <span class="translate-x-1 inline-block h-4 w-4 transform rounded-full bg-white transition"></span>
+                  </toggle-button>
+                </auth-status>
+              </two-factor-auth>
+            </card>
+          </section>
+
+          <!-- 근무 정보 -->
+          <conditional condition="user_type_general">
+            <section id="work-info">
+              <card>
+                <header class="mb-6">
+                  <title class="text-lg font-semibold">근무 정보</title>
+                  <description class="text-gray-600">직장 관련 정보를 관리하세요</description>
+                </header>
+
+                <form action="/auth/profile/work" method="POST">
+                  <input type="hidden" name="csrf_token" value="{csrf_token}" />
+
+                  <form-section class="space-y-6">
+                    <grid class="grid-cols-1 md:grid-cols-2 gap-6">
+                      <!-- 업종 -->
+                      <field>
+                        <label class="block text-sm font-medium text-gray-700">업종</label>
+                        <select
+                          name="industry_code"
+                          class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500"
+                        >
+                          <option value="">선택하세요</option>
+                          <option value="62">정보통신업</option>
+                          <option value="25">금속가공업</option>
+                          <option value="20">화학물질제조업</option>
+                          <option value="41">건설업</option>
+                          <option value="56">음식서비스업</option>
+                          <option value="기타">기타</option>
+                        </select>
+                      </field>
+
+                      <!-- 직무/직책 -->
+                      <field>
+                        <label class="block text-sm font-medium text-gray-700">직무/직책</label>
+                        <input
+                          name="job_title"
+                          type="text"
+                          value="{current_job_title}"
+                          class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500"
+                          placeholder="개발자, 생산직, 관리직 등"
+                        />
+                      </field>
+                    </grid>
+
+                    <!-- 작업 환경 -->
+                    <field>
+                      <label class="block text-sm font-medium text-gray-700">작업 환경</label>
+                      <textarea
+                        name="work_environment"
+                        rows="3"
+                        class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500"
+                        placeholder="작업장 환경, 위험 요소, 사용 장비 등을 설명하세요"
+                      ></textarea>
+                    </field>
+
+                    <!-- 의료 이력 -->
+                    <field>
+                      <label class="block text-sm font-medium text-gray-700">기존 질병력/알레르기</label>
+                      <textarea
+                        name="medical_history"
+                        rows="3"
+                        class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500"
+                        placeholder="기존 질병, 알레르기, 복용 중인 약물 등"
+                      ></textarea>
+                      <help-text class="mt-1 text-sm text-gray-500">
+                        산업재해 보상 심사 시 참고됩니다
+                      </help-text>
+                    </field>
+
+                    <form-actions class="flex justify-end">
+                      <button type="submit" class="primary">
+                        변경 사항 저장
+                      </button>
+                    </form-actions>
+                  </form-section>
+                </form>
+              </card>
+            </section>
+          </conditional>
+
+          <!-- 노무사 정보 -->
+          <conditional condition="user_type_lawyer">
+            <section id="lawyer-info">
+              <card>
+                <header class="mb-6">
+                  <title class="text-lg font-semibold">노무사 정보</title>
+                  <description class="text-gray-600">전문가 정보를 관리하세요</description>
+                </header>
+
+                <form action="/auth/profile/lawyer" method="POST">
+                  <input type="hidden" name="csrf_token" value="{csrf_token}" />
+
+                  <form-section class="space-y-6">
+                    <grid class="grid-cols-1 md:grid-cols-2 gap-6">
+                      <!-- 면허번호 -->
+                      <field>
+                        <label class="block text-sm font-medium text-gray-700">면허번호</label>
+                        <input
+                          name="license_number"
+                          type="text"
+                          value="{current_license_number}"
+                          readonly
+                          class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm bg-gray-50 text-gray-500"
+                        />
+                        <help-text class="mt-1 text-sm text-gray-500">
+                          면허번호는 변경할 수 없습니다
+                        </help-text>
+                      </field>
+
+                      <!-- 경력 -->
+                      <field>
+                        <label class="block text-sm font-medium text-gray-700">경력 (년)</label>
+                        <input
+                          name="experience_years"
+                          type="number"
+                          value="{current_experience_years}"
+                          min="0"
+                          max="50"
+                          class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500"
+                        />
+                      </field>
+
+                      <!-- 상담료 -->
+                      <field>
+                        <label class="block text-sm font-medium text-gray-700">상담료 (원)</label>
+                        <input
+                          name="consultation_fee"
+                          type="number"
+                          value="{current_consultation_fee}"
+                          min="0"
+                          class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500"
+                        />
+                      </field>
+                    </grid>
+
+                    <!-- 사무소명 -->
+                    <field>
+                      <label class="block text-sm font-medium text-gray-700">사무소명</label>
+                      <input
+                        name="office_name"
+                        type="text"
+                        value="{current_office_name}"
+                        class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500"
+                      />
+                    </field>
+
+                    <!-- 사무소 주소 -->
+                    <field>
+                      <label class="block text-sm font-medium text-gray-700">사무소 주소</label>
+                      <textarea
+                        name="office_address"
+                        rows="2"
+                        value="{current_office_address}"
+                        class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500"
+                      ></textarea>
+                    </field>
+
+                    <!-- 전문 분야 -->
+                    <field>
+                      <label class="block text-sm font-medium text-gray-700">전문 분야</label>
+                      <checkbox-group name="specialties" class="mt-2 space-y-2">
+                        <checkbox-option class="flex items-center">
+                          <checkbox name="specialties" value="산업재해" />
+                          <label class="ml-2 text-sm text-gray-700">산업재해</label>
+                        </checkbox-option>
+                        <checkbox-option class="flex items-center">
+                          <checkbox name="specialties" value="근로기준법" />
+                          <label class="ml-2 text-sm text-gray-700">근로기준법</label>
+                        </checkbox-option>
+                        <checkbox-option class="flex items-center">
+                          <checkbox name="specialties" value="산업안전" />
+                          <label class="ml-2 text-sm text-gray-700">산업안전</label>
+                        </checkbox-option>
+                        <checkbox-option class="flex items-center">
+                          <checkbox name="specialties" value="노동분쟁" />
+                          <label class="ml-2 text-sm text-gray-700">노동분쟁</label>
+                        </checkbox-option>
+                      </checkbox-group>
+                    </field>
+
+                    <form-actions class="flex justify-end">
+                      <button type="submit" class="primary">
+                        변경 사항 저장
+                      </button>
+                    </form-actions>
+                  </form-section>
+                </form>
+              </card>
+            </section>
+          </conditional>
+
+          <!-- 알림 설정 -->
+          <section id="notifications">
+            <card>
+              <header class="mb-6">
+                <title class="text-lg font-semibold">알림 설정</title>
+                <description class="text-gray-600">받을 알림 유형을 선택하세요</description>
+              </header>
+
+              <form action="/auth/profile/notifications" method="POST">
+                <input type="hidden" name="csrf_token" value="{csrf_token}" />
+
+                <notification-settings class="space-y-6">
+                  <setting-group>
+                    <group-title class="font-medium text-gray-900 mb-3">이메일 알림</group-title>
+                    <setting-list class="space-y-3">
+                      <setting-item class="flex items-center justify-between">
+                        <setting-info>
+                          <label class="font-medium text-gray-900">신청 상태 변경</label>
+                          <description class="text-sm text-gray-600">보상금 신청 승인/거부 알림</description>
+                        </setting-info>
+                        <toggle-switch>
+                          <input type="checkbox" name="email_status_updates" checked />
+                        </toggle-switch>
+                      </setting-item>
+
+                      <setting-item class="flex items-center justify-between">
+                        <setting-info>
+                          <label class="font-medium text-gray-900">상담 예약 확정</label>
+                          <description class="text-sm text-gray-600">노무사 상담 예약 관련 알림</description>
+                        </setting-info>
+                        <toggle-switch>
+                          <input type="checkbox" name="email_consultation_updates" checked />
+                        </toggle-switch>
+                      </setting-item>
+
+                      <setting-item class="flex items-center justify-between">
+                        <setting-info>
+                          <label class="font-medium text-gray-900">마케팅 정보</label>
+                          <description class="text-sm text-gray-600">새로운 서비스 및 혜택 정보</description>
+                        </setting-info>
+                        <toggle-switch>
+                          <input type="checkbox" name="email_marketing" />
+                        </toggle-switch>
+                      </setting-item>
+                    </setting-list>
+                  </setting-group>
+
+                  <setting-group>
+                    <group-title class="font-medium text-gray-900 mb-3">SMS 알림</group-title>
+                    <setting-list class="space-y-3">
+                      <setting-item class="flex items-center justify-between">
+                        <setting-info>
+                          <label class="font-medium text-gray-900">긴급 알림</label>
+                          <description class="text-sm text-gray-600">중요한 상태 변경 알림</description>
+                        </setting-info>
+                        <toggle-switch>
+                          <input type="checkbox" name="sms_urgent" checked />
+                        </toggle-switch>
+                      </setting-item>
+
+                      <setting-item class="flex items-center justify-between">
+                        <setting-info>
+                          <label class="font-medium text-gray-900">예약 리마인더</label>
+                          <description class="text-sm text-gray-600">상담 예약 1시간 전 알림</description>
+                        </setting-info>
+                        <toggle-switch>
+                          <input type="checkbox" name="sms_reminders" />
+                        </toggle-switch>
+                      </setting-item>
+                    </setting-list>
+                  </setting-group>
+
+                  <form-actions class="flex justify-end">
+                    <button type="submit" class="primary">
+                      변경 사항 저장
+                    </button>
+                  </form-actions>
+                </notification-settings>
+              </form>
+            </card>
+          </section>
+
+          <!-- 계정 관리 (위험 구역) -->
+          <section id="danger-zone">
+            <card class="border-red-200">
+              <header class="mb-6">
+                <title class="text-lg font-semibold text-red-900">계정 관리</title>
+                <description class="text-red-600">되돌릴 수 없는 작업입니다</description>
+              </header>
+
+              <danger-actions class="space-y-4">
+                <!-- 모든 데이터 다운로드 -->
+                <action-item class="flex items-center justify-between p-4 border border-gray-200 rounded-lg">
+                  <action-info>
+                    <title class="font-medium text-gray-900">데이터 다운로드</title>
+                    <description class="text-sm text-gray-600">
+                      계정과 관련된 모든 데이터를 다운로드하세요
+                    </description>
+                  </action-info>
+                  <button class="secondary">
+                    다운로드
+                  </button>
+                </action-item>
+
+                <!-- 계정 비활성화 -->
+                <action-item class="flex items-center justify-between p-4 border border-yellow-200 rounded-lg bg-yellow-50">
+                  <action-info>
+                    <title class="font-medium text-yellow-900">계정 비활성화</title>
+                    <description class="text-sm text-yellow-700">
+                      계정을 일시적으로 비활성화합니다 (복구 가능)
+                    </description>
+                  </action-info>
+                  <button class="bg-yellow-600 text-white px-4 py-2 rounded-md hover:bg-yellow-700">
+                    비활성화
+                  </button>
+                </action-item>
+
+                <!-- 계정 삭제 -->
+                <action-item class="flex items-center justify-between p-4 border border-red-200 rounded-lg bg-red-50">
+                  <action-info>
+                    <title class="font-medium text-red-900">계정 삭제</title>
+                    <description class="text-sm text-red-700">
+                      모든 데이터가 영구적으로 삭제됩니다 (복구 불가능)
+                    </description>
+                  </action-info>
+                  <button class="bg-red-600 text-white px-4 py-2 rounded-md hover:bg-red-700">
+                    계정 삭제
+                  </button>
+                </action-item>
+              </danger-actions>
+            </card>
+          </section>
+        </main-content>
+      </grid>
+    </container>
+  </layout>
+</page>

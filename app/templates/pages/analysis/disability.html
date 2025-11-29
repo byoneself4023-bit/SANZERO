@@ -1,0 +1,628 @@
+{% extends "base.html" %}
+
+{% block title %}장해등급 예측 - SANZERO{% endblock %}
+
+{% block extra_head %}
+<meta name="description" content="{{ description }}">
+<!-- 장해등급 예측 전용 스타일 -->
+<!-- 인라인 기본 스타일 (CDN 대신) -->
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: -apple-system, BlinkMacSystemFont, sans-serif; line-height: 1.6; color: #333; }
+.container { max-width: 1200px; margin: 0 auto; padding: 0 20px; }
+.header { background: #2563eb; color: white; padding: 1rem; display: flex; justify-content: space-between; align-items: center; }
+.btn { background: #2563eb; color: white; padding: 12px 24px; border: none; border-radius: 6px; cursor: pointer; text-decoration: none; display: inline-block; font-weight: 500; transition: background 0.3s; }
+.btn:hover { background: #1d4ed8; }
+.btn-primary { background: linear-gradient(45deg, #667eea, #764ba2); }
+.btn-orange { background: #ea580c; }
+.card { background: white; border-radius: 12px; padding: 24px; margin: 16px 0; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+.form-group { margin-bottom: 20px; }
+.form-group label { display: block; margin-bottom: 8px; font-weight: 500; color: #374151; }
+.form-control { width: 100%; padding: 12px; border: 1px solid #d1d5db; border-radius: 6px; font-size: 16px; }
+.form-control:focus { border-color: #2563eb; outline: none; box-shadow: 0 0 0 3px rgba(37,99,235,0.1); }
+select.form-control { cursor: pointer; }
+textarea.form-control { min-height: 100px; resize: vertical; }
+.text-center { text-align: center; }
+.text-red { color: #dc2626; }
+.bg-warning { background: #fef3c7; border-left: 4px solid #f59e0b; padding: 16px; border-radius: 6px; margin: 16px 0; }
+.bg-error { background: #fee2e2; border-left: 4px solid #ef4444; padding: 16px; border-radius: 6px; margin: 16px 0; }
+.grid-2 { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; }
+.pipeline-info { background: rgba(37,99,235,0.1); border-radius: 12px; padding: 20px; margin: 20px 0; }
+.pipeline-stage { display: flex; align-items: center; gap: 16px; margin: 12px 0; padding: 12px; background: white; border-radius: 8px; }
+.stage-number { background: #2563eb; color: white; width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; }
+h1, h2, h3, h4 { color: #1f2937; margin-bottom: 12px; }
+h1 { font-size: 2.5rem; }
+h2 { font-size: 2rem; }
+h3 { font-size: 1.5rem; }
+p { margin-bottom: 12px; }
+.feature-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; margin: 20px 0; }
+.feature-card { background: #f8fafc; border: 1px solid #e2e8f0; padding: 16px; border-radius: 8px; text-align: center; }
+.info-section { background: white; border-radius: 16px; padding: 32px; box-shadow: 0 4px 20px rgba(0,0,0,0.08); margin: 20px 0; }
+
+/* 추가 스타일 */
+.prediction-form {
+    background: white;
+    border: 1px solid #e5e7eb;
+    border-radius: 16px;
+    padding: 2rem;
+    color: #1f2937;
+    margin-bottom: 2rem;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+}
+
+.form-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 1.5rem;
+    margin: 1.5rem 0;
+}
+
+.form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.form-group label {
+    font-weight: 600;
+    font-size: 0.9rem;
+    color: #374151;
+}
+
+.form-group select,
+.form-group textarea {
+    padding: 0.75rem;
+    border: 1px solid #d1d5db;
+    border-radius: 8px;
+    background: #ffffff;
+    color: #1f2937;
+    font-size: 14px;
+}
+
+.form-group select option {
+    background: #ffffff;
+    color: #1f2937;
+}
+
+.form-group textarea {
+    resize: vertical;
+    min-height: 100px;
+}
+
+.form-group select:focus,
+.form-group textarea:focus {
+    outline: none;
+    border-color: #2563eb;
+    background: #ffffff;
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+}
+
+.predict-button {
+    background: linear-gradient(45deg, #ff6b6b, #ffa726);
+    border: none;
+    color: white;
+    font-weight: bold;
+    font-size: 1.1rem;
+    padding: 1rem 2rem;
+    border-radius: 25px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 15px rgba(255, 107, 107, 0.3);
+}
+
+.predict-button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(255, 107, 107, 0.4);
+}
+
+.predict-button:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    transform: none;
+}
+
+.pipeline-info {
+    background: #f8f9fa;
+    border: 1px solid #e9ecef;
+    border-radius: 12px;
+    padding: 1.5rem;
+    margin: 1.5rem 0;
+}
+
+.pipeline-stage {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin: 0.8rem 0;
+    padding: 0.8rem;
+    background: #ffffff;
+    border: 1px solid #e9ecef;
+    border-radius: 8px;
+}
+
+.stage-number {
+    background: #2563eb;
+    color: white;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    font-size: 0.9rem;
+}
+
+.stage-info h4 {
+    margin: 0 0 0.3rem 0;
+    font-size: 1rem;
+    color: #1f2937;
+}
+
+.stage-info p {
+    margin: 0;
+    font-size: 0.85rem;
+    color: #6b7280;
+}
+
+.info-section {
+    background: white;
+    border-radius: 16px;
+    padding: 2rem;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+}
+
+.feature-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1rem;
+    margin: 1rem 0;
+}
+
+.feature-card {
+    background: #f8f9ff;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    padding: 1rem;
+    text-align: center;
+}
+
+.feature-card h4 {
+    margin: 0 0 0.5rem 0;
+    color: #4a5568;
+    font-size: 0.9rem;
+}
+
+.feature-card p {
+    margin: 0;
+    color: #718096;
+    font-size: 0.8rem;
+}
+
+@media (max-width: 768px) {
+    .form-grid {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+    }
+
+    .prediction-form {
+        padding: 1.5rem;
+    }
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container mx-auto px-4 py-8 max-w-6xl">
+    <!-- 페이지 헤더 -->
+    <div class="text-center mb-8">
+        <h1 class="text-4xl font-bold text-gray-800 mb-4">🔮 AI 장해등급 예측</h1>
+        <p class="text-xl text-gray-600">3단계 AI 파이프라인으로 정확한 장해등급을 예측합니다</p>
+    </div>
+
+    {% if not disability_service_available %}
+    <!-- 서비스 준비중 메시지 -->
+    <div class="bg-yellow-50 border-l-4 border-yellow-400 p-6 mb-8 rounded-r-lg">
+        <div class="flex">
+            <div class="flex-shrink-0">
+                <svg class="h-5 w-5 text-yellow-400" viewBox="0 0 20 20" fill="currentColor">
+                    <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd" />
+                </svg>
+            </div>
+            <div class="ml-3">
+                <h3 class="text-sm font-medium text-yellow-800">서비스 준비 중</h3>
+                <p class="mt-2 text-sm text-yellow-700">
+                    장해등급 예측 AI 서비스를 준비하고 있습니다. 빠른 시일 내에 서비스를 제공하겠습니다.
+                </p>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    {% if error %}
+    <!-- 에러 메시지 -->
+    <div class="bg-red-50 border-l-4 border-red-400 p-6 mb-8 rounded-r-lg">
+        <div class="flex">
+            <div class="flex-shrink-0">
+                <svg class="h-5 w-5 text-red-400" viewBox="0 0 20 20" fill="currentColor">
+                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd" />
+                </svg>
+            </div>
+            <div class="ml-3">
+                <h3 class="text-sm font-medium text-red-800">오류 발생</h3>
+                <p class="mt-2 text-sm text-red-700">{{ error }}</p>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- 예측 폼 -->
+    {% if disability_service_available %}
+    <div class="prediction-form">
+        <div class="text-center mb-6">
+            <h2 class="text-2xl font-bold mb-2">🎯 장해등급 예측 신청</h2>
+            <p class="text-lg opacity-90">아래 정보를 입력하시면 AI가 장해등급을 예측해드립니다</p>
+        </div>
+
+        <form method="POST" action="/analysis/disability" id="predictionForm">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+
+            <!-- 기본 정보 -->
+            <div class="form-grid">
+                <div class="form-group">
+                    <label for="accident_type">재해 유형 <span class="text-red-300">*</span></label>
+                    <select name="accident_type" id="accident_type" required>
+                        <option value="1" selected>추락</option>
+                        <option value="2">충돌</option>
+                        <option value="3">끼임</option>
+                        <option value="4">절단/베임</option>
+                        <option value="5">화재/폭발</option>
+                        <option value="6">교통사고</option>
+                        <option value="7">기계/장비 관련</option>
+                        <option value="8">기타</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="gender">성별 <span class="text-red-300">*</span></label>
+                    <select name="gender" id="gender" required>
+                        <option value="1">남성</option>
+                        <option value="2">여성</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="age_group">나이대 <span class="text-red-300">*</span></label>
+                    <select name="age_group" id="age_group" required>
+                        <option value="1">20대 이하</option>
+                        <option value="2">30대</option>
+                        <option value="3" selected>40대</option>
+                        <option value="4">50대</option>
+                        <option value="5">60대</option>
+                        <option value="6">70대 이상</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- 상세 정보 -->
+            <div class="form-grid">
+                <div class="form-group">
+                    <label for="industry_type">산업 분류 <span class="text-red-300">*</span></label>
+                    <select name="industry_type" id="industry_type" required>
+                        <option value="1">농업/임업/어업</option>
+                        <option value="2" selected>제조업</option>
+                        <option value="3">건설업</option>
+                        <option value="4">운수업</option>
+                        <option value="5">서비스업</option>
+                        <option value="6">사업서비스업</option>
+                        <option value="7">보건/사회복지업</option>
+                        <option value="8">기타 산업</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="body_part">부상 부위 <span class="text-red-300">*</span></label>
+                    <select name="body_part" id="body_part" required>
+                        <option value="1">머리/얼굴</option>
+                        <option value="2">목/목뼈</option>
+                        <option value="3">가슴/흉부</option>
+                        <option value="4">복부/배</option>
+                        <option value="5" selected>팔/어깨</option>
+                        <option value="6">다리/무릎</option>
+                        <option value="7">손/손가락</option>
+                        <option value="8">발/발가락</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="injury_type">부상 종류 <span class="text-red-300">*</span></label>
+                    <select name="injury_type" id="injury_type" required>
+                        <option value="1">절단</option>
+                        <option value="2">골절</option>
+                        <option value="3">탈구</option>
+                        <option value="4" selected>염좌</option>
+                        <option value="5">타박상</option>
+                        <option value="6">찰과상</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- 치료 정보 -->
+            <div class="form-grid">
+                <div class="form-group">
+                    <label for="treatment_period">치료 기간 <span class="text-red-300">*</span></label>
+                    <select name="treatment_period" id="treatment_period" required>
+                        <option value="1">1개월 미만</option>
+                        <option value="2">1-2개월</option>
+                        <option value="3" selected>3개월</option>
+                        <option value="4">4-6개월</option>
+                        <option value="5">6개월-1년</option>
+                        <option value="6">1년 이상</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- 장해 내용 상세 설명 (오류 메시지 스타일) -->
+            <div class="form-group" style="margin-top: 1.5rem;">
+                <label for="장해_내용" style="font-size: 1rem; font-weight: 600; color: #1f2937; margin-bottom: 0.75rem;">장해 내용 상세 설명 <span class="text-red-500">*</span></label>
+
+                <!-- 경고 스타일 컨테이너 -->
+                <div class="bg-red-50 border border-red-200 rounded-lg p-4 mb-3">
+                    <div class="flex">
+                        <div class="flex-shrink-0">
+                            <svg class="h-5 w-5 text-red-400" viewBox="0 0 20 20" fill="currentColor">
+                                <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd" />
+                            </svg>
+                        </div>
+                        <div class="ml-3">
+                            <h4 class="text-sm font-medium text-red-800">산업재해 관련 내용을 포함해주세요. (예: 작업, 사고, 부상, 기계 등)</h4>
+                            <div class="mt-2 text-sm text-red-700">
+                                <p>올바른 예시:</p>
+                                <ul class="list-disc list-inside space-y-1">
+                                    <li>작업 중 프레스 기계에 손가락 절단, 계단에서 추락하여 다리 골절 등 구체적인 사고 경위</li>
+                                    <li>건설현장 비계 추락으로 인한 팔꿈치 부상</li>
+                                    <li>용접 작업 중 화상으로 인한 화상</li>
+                                    <li>크레인 작업 중 충돌 사고</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <textarea
+                    name="장해_내용"
+                    id="장해_내용"
+                    placeholder="예: 프레스 작업 중 손가락 절단, 계단에서 추락하여 다리 골절 등 구체적인 사고 경위와 부상 내용을 설명해주세요."
+                    required
+                    style="width: 100%; min-height: 120px; padding: 0.75rem; border: 1px solid #d1d5db; border-radius: 8px; resize: vertical;"
+                ></textarea>
+            </div>
+
+            <!-- 제출 버튼 -->
+            <div class="text-center" style="margin-top: 2rem;">
+                <button type="submit" class="predict-button" id="submitBtn">
+                    🔮 장해등급 예측하기
+                </button>
+            </div>
+        </form>
+
+    </div>
+    {% endif %}
+
+    <!-- 서비스 정보 -->
+    <div class="info-section">
+        <h2 class="text-2xl font-bold text-gray-800 mb-6 text-center">ℹ️ 예측 서비스 정보</h2>
+
+        <div class="feature-grid">
+            <div class="feature-card" style="background: linear-gradient(135deg, #fef2f2, #fee2e2); border-left: 4px solid #ef4444;">
+                <h4 style="color: #dc2626;">입력 데이터</h4>
+                <p style="color: #991b1b;">7개 선택값 + 1개 텍스트</p>
+            </div>
+            <div class="feature-card" style="background: linear-gradient(135deg, #fef2f2, #fecaca); border-left: 4px solid #f87171;">
+                <h4 style="color: #b91c1c;">예측 범위</h4>
+                <p style="color: #7f1d1d;">1급(가장 심각) ~ 15급(경미)</p>
+            </div>
+            <div class="feature-card" style="background: linear-gradient(135deg, #fff5f5, #fed7d7); border-left: 4px solid #fc8181;">
+                <h4 style="color: #c53030;">처리 시간</h4>
+                <p style="color: #9c1c1c;">평균 2-5초 내 결과</p>
+            </div>
+            <div class="feature-card" style="background: linear-gradient(135deg, #fef5e7, #fed7aa); border-left: 4px solid #fb923c;">
+                <h4 style="color: #ea580c;">활용 데이터</h4>
+                <p style="color: #c2410c;">산재 판례 1,000+ 건</p>
+            </div>
+        </div>
+
+        <div class="bg-red-50 border-l-4 border-red-400 p-6 mt-6 rounded-r-lg">
+            <div class="flex">
+                <div class="flex-shrink-0">
+                    <svg class="h-5 w-5 text-red-400" viewBox="0 0 20 20" fill="currentColor">
+                        <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd" />
+                    </svg>
+                </div>
+                <div class="ml-3">
+                    <h3 class="text-sm font-medium text-red-800">참고사항</h3>
+                    <p class="mt-2 text-sm text-red-700">
+                        이 예측은 참고용이며, 정확한 장해등급은 의료진의 진단과 심사를 통해 결정됩니다.
+                        예측 결과를 바탕으로 전문가 상담을 받아보시기를 권장합니다.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- AI 파이프라인 정보 -->
+    <div class="info-section">
+        <h2 class="text-2xl font-bold text-gray-800 mb-6 text-center">🤖 AI 예측 파이프라인</h2>
+
+        <div class="pipeline-info">
+            <div class="pipeline-stage" style="background: linear-gradient(135deg, #fef2f2, #fee2e2); border-left: 4px solid #ef4444;">
+                <div class="stage-number">🎯</div>
+                <div class="stage-info">
+                    <h4 style="color: #dc2626;">정확 문구 매칭</h4>
+                    <p style="color: #991b1b;">입력된 장해 내용에서 정확한 키워드를 찾아 즉시 매칭 (정확도 100%)</p>
+                </div>
+            </div>
+
+            <div class="pipeline-stage" style="background: linear-gradient(135deg, #fef2f2, #fecaca); border-left: 4px solid #f87171;">
+                <div class="stage-number">🧠</div>
+                <div class="stage-info">
+                    <h4 style="color: #b91c1c;">BERT 유사도 매칭</h4>
+                    <p style="color: #7f1d1d;">AI 언어 모델을 사용해 유사한 사례와 비교 분석 (임계값 72%)</p>
+                </div>
+            </div>
+
+            <div class="pipeline-stage" style="background: linear-gradient(135deg, #fff5f5, #fed7d7); border-left: 4px solid #fc8181;">
+                <div class="stage-number">⚙️</div>
+                <div class="stage-info">
+                    <h4 style="color: #c53030;">2-Stage 머신러닝 예측</h4>
+                    <p style="color: #9c1c1c;">K-Prototypes 클러스터링과 딥러닝 모델을 통한 종합적 예측</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+
+// 강화된 입력 검증 함수
+function validateInjuryContent(content) {
+    const errors = [];
+
+    // 최소 길이 체크
+    if (content.length < 10) {
+        errors.push('장해 내용을 더 자세히 설명해주세요. (최소 10자 이상)');
+        return errors;
+    }
+
+    // 특수문자나 숫자만 입력 방지
+    const onlySpecialCharsOrNumbers = /^[^가-힣a-zA-Z]*$/.test(content);
+    if (onlySpecialCharsOrNumbers) {
+        errors.push('한글 또는 영문으로 구체적인 사고 상황을 설명해주세요.');
+        return errors;
+    }
+
+    // 반복 문자 방지 (같은 문자 4번 이상)
+    const repeatedChars = /(.)\1{3,}/.test(content);
+    if (repeatedChars) {
+        errors.push('의미있는 내용으로 작성해주세요. 같은 문자를 반복하지 마세요.');
+        return errors;
+    }
+
+    // 키보드 순서 입력 방지
+    const nonsensePatterns = [
+        /asdf|qwer|zxcv|1234|abcd|ㅁㄴㅇㄹ|ㅂㅈㄷㄱ|asdasd|qweqwe/gi,
+        /^\w{1,2}$/, // 너무 짧은 영문
+        /^[ㄱ-ㅎㅏ-ㅣ]+$/ // 자음이나 모음만
+    ];
+
+    for (const pattern of nonsensePatterns) {
+        if (pattern.test(content)) {
+            errors.push('구체적이고 의미있는 사고 내용을 작성해주세요.');
+            return errors;
+        }
+    }
+
+    // 산업재해 관련 키워드 확인
+    const injuryKeywords = [
+        '작업', '일', '업무', '사고', '부상', '다치다', '아프다', '골절', '절단', '화상', '넘어지다',
+        '떨어지다', '미끄러지다', '끼이다', '맞다', '충돌', '추락', '머리', '목', '팔', '다리', '손', '발',
+        '허리', '가슴', '어깨', '무릎', '손가락', '발가락', '프레스', '기계', '장비', '사다리', '계단',
+        '공장', '건설', '현장', '사무실', '창고', '병원', '치료', '수술', '아픔', '통증', '마비'
+    ];
+
+    const hasValidKeyword = injuryKeywords.some(keyword =>
+        content.toLowerCase().includes(keyword) || content.includes(keyword)
+    );
+
+    if (!hasValidKeyword) {
+        errors.push('산업재해와 관련된 구체적인 부상이나 사고 내용을 입력해주세요.');
+        return errors;
+    }
+
+    return errors;
+}
+
+// 폼 제출 처리
+document.getElementById('predictionForm').addEventListener('submit', function(e) {
+    const submitBtn = document.getElementById('submitBtn');
+    const injury_description = document.getElementById('장해_내용').value.trim();
+
+    if (!injury_description) {
+        e.preventDefault();
+        alert('장해 내용을 입력해주세요.');
+        return;
+    }
+
+    // 강화된 검증 실행
+    const validationErrors = validateInjuryContent(injury_description);
+    if (validationErrors.length > 0) {
+        e.preventDefault();
+        alert(validationErrors[0]); // 첫 번째 오류 메시지 표시
+        return;
+    }
+
+    // 제출 버튼 비활성화
+    submitBtn.disabled = true;
+    submitBtn.innerHTML = '🔄 예측 중...';
+    submitBtn.style.opacity = '0.6';
+});
+
+// 실시간 입력 검증 기능
+function setupRealTimeValidation() {
+    const textarea = document.getElementById('장해_내용');
+    const submitBtn = document.getElementById('submitBtn');
+
+    if (!textarea || !submitBtn) return;
+
+    // 초기 버튼 상태
+    submitBtn.disabled = true;
+    submitBtn.style.opacity = '0.6';
+    submitBtn.innerHTML = '장해 내용을 입력해주세요';
+
+    // 실시간 검증
+    textarea.addEventListener('input', function() {
+        const content = this.value.trim();
+
+        if (!content) {
+            submitBtn.disabled = true;
+            submitBtn.style.opacity = '0.6';
+            submitBtn.innerHTML = '장해 내용을 입력해주세요';
+            this.style.borderColor = '#d1d5db';
+            return;
+        }
+
+        const errors = validateInjuryContent(content);
+
+        if (errors.length > 0) {
+            submitBtn.disabled = true;
+            submitBtn.style.opacity = '0.6';
+            submitBtn.innerHTML = '입력을 확인해주세요';
+            this.style.borderColor = '#ef4444';
+            this.title = errors[0]; // 툴팁으로 오류 메시지 표시
+        } else {
+            submitBtn.disabled = false;
+            submitBtn.style.opacity = '1';
+            submitBtn.innerHTML = '🔮 장해등급 예측하기';
+            this.style.borderColor = '#22c55e';
+            this.title = '입력 완료! 예측이 가능합니다.';
+        }
+    });
+}
+
+// DOMContentLoaded 이벤트에서 실시간 검증 설정
+document.addEventListener('DOMContentLoaded', function() {
+    setupRealTimeValidation();
+});
+
+// 폼 필드 변경 시 미리보기 업데이트
+const formFields = ['gender', 'age_group', 'industry_type', 'accident_type', 'body_part', 'injury_type', 'treatment_period'];
+formFields.forEach(fieldId => {
+    document.getElementById(fieldId).addEventListener('change', function() {
+        console.log(`${fieldId} changed to:`, this.value);
+    });
+});
+</script>
+{% endblock %}

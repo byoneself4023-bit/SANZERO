@@ -1,0 +1,391 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- 관리자 대시보드 -->
+<page name="admin-dashboard" title="관리자 대시보드 - SANZERO">
+  <layout type="main">
+    <!-- 페이지 헤더 -->
+    <section class="page-header">
+      <container class="max-w-7xl mx-auto px-4 py-8">
+        <breadcrumb>
+          <link href="/">홈</link>
+          <current>관리자</current>
+        </breadcrumb>
+
+        <div class="flex justify-between items-center">
+          <div>
+            <heading level="1" class="text-3xl font-bold text-gray-900 mb-2">
+              관리자 대시보드
+            </heading>
+            <text class="text-gray-600">
+              시스템 현황 및 관리 업무를 한눈에 확인하세요
+            </text>
+          </div>
+          <refresh-button class="primary">
+            <icon name="refresh-cw" class="w-4 h-4 mr-2" />
+            새로고침
+          </refresh-button>
+        </div>
+      </container>
+    </section>
+
+    <container class="max-w-7xl mx-auto px-4">
+      <!-- 주요 지표 카드 -->
+      <metrics-section class="mb-8">
+        <grid class="grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+          <!-- 총 사용자 수 -->
+          <metric-card class="bg-white rounded-lg shadow border p-6">
+            <metric-header class="flex items-center justify-between">
+              <icon name="users" class="w-8 h-8 text-blue-600" />
+              <trend class="text-sm text-green-600">↑ 12.5%</trend>
+            </metric-header>
+            <metric-value class="text-3xl font-bold text-gray-900 mt-4">2,847</metric-value>
+            <metric-label class="text-gray-600">총 사용자</metric-label>
+            <metric-detail class="text-sm text-gray-500 mt-1">이번 달 +324명</metric-detail>
+          </metric-card>
+
+          <!-- 보상금 신청 -->
+          <metric-card class="bg-white rounded-lg shadow border p-6">
+            <metric-header class="flex items-center justify-between">
+              <icon name="file-text" class="w-8 h-8 text-green-600" />
+              <trend class="text-sm text-green-600">↑ 8.3%</trend>
+            </metric-header>
+            <metric-value class="text-3xl font-bold text-gray-900 mt-4">456</metric-value>
+            <metric-label class="text-gray-600">보상금 신청</metric-label>
+            <metric-detail class="text-sm text-gray-500 mt-1">이번 달 +35건</metric-detail>
+          </metric-card>
+
+          <!-- 상담 예약 -->
+          <metric-card class="bg-white rounded-lg shadow border p-6">
+            <metric-header class="flex items-center justify-between">
+              <icon name="calendar" class="w-8 h-8 text-purple-600" />
+              <trend class="text-sm text-red-600">↓ 3.2%</trend>
+            </metric-header>
+            <metric-value class="text-3xl font-bold text-gray-900 mt-4">189</metric-value>
+            <metric-label class="text-gray-600">상담 예약</metric-label>
+            <metric-detail class="text-sm text-gray-500 mt-1">이번 달 -6건</metric-detail>
+          </metric-card>
+
+          <!-- AI 분석 요청 -->
+          <metric-card class="bg-white rounded-lg shadow border p-6">
+            <metric-header class="flex items-center justify-between">
+              <icon name="brain" class="w-8 h-8 text-orange-600" />
+              <trend class="text-sm text-green-600">↑ 25.7%</trend>
+            </metric-header>
+            <metric-value class="text-3xl font-bold text-gray-900 mt-4">1,234</metric-value>
+            <metric-label class="text-gray-600">AI 분석</metric-label>
+            <metric-detail class="text-sm text-gray-500 mt-1">이번 달 +253건</metric-detail>
+          </metric-card>
+        </grid>
+      </metrics-section>
+
+      <grid class="grid-cols-1 lg:grid-cols-2 gap-8">
+        <!-- 왼쪽 컬럼 -->
+        <left-column class="space-y-8">
+          <!-- 대기 중인 승인 -->
+          <card>
+            <header class="flex items-center justify-between mb-4">
+              <title class="text-lg font-semibold">승인 대기</title>
+              <view-all href="/admin/applications?status=pending" class="text-sm text-primary-600">
+                전체 보기
+              </view-all>
+            </header>
+
+            <pending-items class="space-y-3">
+              <pending-item class="flex items-center justify-between p-4 border rounded-lg hover:bg-gray-50">
+                <item-info class="flex-1">
+                  <item-title class="font-medium text-gray-900">작업장 낙상 사고</item-title>
+                  <item-meta class="text-sm text-gray-600 mt-1">
+                    <applicant>박○○</applicant> •
+                    <date>2024.01.20</date> •
+                    <amount>1,250만원</amount>
+                  </item-meta>
+                  <item-priority class="inline-block mt-2 px-2 py-1 bg-yellow-100 text-yellow-800 text-xs rounded-full">
+                    긴급
+                  </item-priority>
+                </item-info>
+                <item-actions class="flex space-x-2">
+                  <button class="text-green-600 hover:text-green-700 p-2">
+                    <icon name="check" class="w-4 h-4" />
+                  </button>
+                  <button class="text-red-600 hover:text-red-700 p-2">
+                    <icon name="x" class="w-4 h-4" />
+                  </button>
+                  <button href="/admin/applications/123" class="text-blue-600 hover:text-blue-700 p-2">
+                    <icon name="eye" class="w-4 h-4" />
+                  </button>
+                </item-actions>
+              </pending-item>
+
+              <pending-item class="flex items-center justify-between p-4 border rounded-lg hover:bg-gray-50">
+                <item-info class="flex-1">
+                  <item-title class="font-medium text-gray-900">화학물질 노출 피해</item-title>
+                  <item-meta class="text-sm text-gray-600 mt-1">
+                    <applicant>이○○</applicant> •
+                    <date>2024.01.18</date> •
+                    <amount>3,200만원</amount>
+                  </item-meta>
+                  <item-priority class="inline-block mt-2 px-2 py-1 bg-red-100 text-red-800 text-xs rounded-full">
+                    검토 필요
+                  </item-priority>
+                </item-info>
+                <item-actions class="flex space-x-2">
+                  <button class="text-green-600 hover:text-green-700 p-2">
+                    <icon name="check" class="w-4 h-4" />
+                  </button>
+                  <button class="text-red-600 hover:text-red-700 p-2">
+                    <icon name="x" class="w-4 h-4" />
+                  </button>
+                  <button href="/admin/applications/124" class="text-blue-600 hover:text-blue-700 p-2">
+                    <icon name="eye" class="w-4 h-4" />
+                  </button>
+                </item-actions>
+              </pending-item>
+
+              <pending-item class="flex items-center justify-between p-4 border rounded-lg hover:bg-gray-50">
+                <item-info class="flex-1">
+                  <item-title class="font-medium text-gray-900">기계 조작 중 절단</item-title>
+                  <item-meta class="text-sm text-gray-600 mt-1">
+                    <applicant>최○○</applicant> •
+                    <date>2024.01.15</date> •
+                    <amount>850만원</amount>
+                  </item-meta>
+                  <item-priority class="inline-block mt-2 px-2 py-1 bg-blue-100 text-blue-800 text-xs rounded-full">
+                    일반
+                  </item-priority>
+                </item-info>
+                <item-actions class="flex space-x-2">
+                  <button class="text-green-600 hover:text-green-700 p-2">
+                    <icon name="check" class="w-4 h-4" />
+                  </button>
+                  <button class="text-red-600 hover:text-red-700 p-2">
+                    <icon name="x" class="w-4 h-4" />
+                  </button>
+                  <button href="/admin/applications/125" class="text-blue-600 hover:text-blue-700 p-2">
+                    <icon name="eye" class="w-4 h-4" />
+                  </button>
+                </item-actions>
+              </pending-item>
+            </pending-items>
+          </card>
+
+          <!-- 최근 활동 -->
+          <card>
+            <header class="mb-4">
+              <title class="text-lg font-semibold">최근 활동</title>
+            </header>
+
+            <activity-timeline class="space-y-4">
+              <activity-item class="flex items-start">
+                <activity-icon class="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center mr-3 mt-1">
+                  <icon name="check" class="w-4 h-4 text-green-600" />
+                </activity-icon>
+                <activity-content class="flex-1">
+                  <activity-description class="text-gray-900">
+                    <strong>김관리자</strong>가 보상금 신청을 승인했습니다
+                  </activity-description>
+                  <activity-meta class="text-sm text-gray-500 mt-1">
+                    APP-2024-120 • 5분 전
+                  </activity-meta>
+                </activity-content>
+              </activity-item>
+
+              <activity-item class="flex items-start">
+                <activity-icon class="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center mr-3 mt-1">
+                  <icon name="user-plus" class="w-4 h-4 text-blue-600" />
+                </activity-icon>
+                <activity-content class="flex-1">
+                  <activity-description class="text-gray-900">
+                    새로운 노무사가 가입했습니다
+                  </activity-description>
+                  <activity-meta class="text-sm text-gray-500 mt-1">
+                    이노무사 (LAW-2024-015) • 1시간 전
+                  </activity-meta>
+                </activity-content>
+              </activity-item>
+
+              <activity-item class="flex items-start">
+                <activity-icon class="w-8 h-8 bg-red-100 rounded-full flex items-center justify-center mr-3 mt-1">
+                  <icon name="x" class="w-4 h-4 text-red-600" />
+                </activity-icon>
+                <activity-content class="flex-1">
+                  <activity-description class="text-gray-900">
+                    <strong>박관리자</strong>가 보상금 신청을 거부했습니다
+                  </activity-description>
+                  <activity-meta class="text-sm text-gray-500 mt-1">
+                    APP-2024-118 • 2시간 전
+                  </activity-meta>
+                </activity-content>
+              </activity-item>
+
+              <activity-item class="flex items-start">
+                <activity-icon class="w-8 h-8 bg-purple-100 rounded-full flex items-center justify-center mr-3 mt-1">
+                  <icon name="brain" class="w-4 h-4 text-purple-600" />
+                </activity-icon>
+                <activity-content class="flex-1">
+                  <activity-description class="text-gray-900">
+                    AI 분석 모델이 업데이트되었습니다
+                  </activity-description>
+                  <activity-meta class="text-sm text-gray-500 mt-1">
+                    판례 분석 v2.1 • 3시간 전
+                  </activity-meta>
+                </activity-content>
+              </activity-item>
+            </activity-timeline>
+          </card>
+        </left-column>
+
+        <!-- 오른쪽 컬럼 -->
+        <right-column class="space-y-8">
+          <!-- 시스템 상태 -->
+          <card>
+            <header class="mb-4">
+              <title class="text-lg font-semibold">시스템 상태</title>
+            </header>
+
+            <system-status class="space-y-4">
+              <status-item class="flex items-center justify-between p-3 bg-green-50 rounded-lg border-l-4 border-green-500">
+                <status-info class="flex items-center">
+                  <icon name="server" class="w-5 h-5 text-green-600 mr-3" />
+                  <div>
+                    <status-label class="font-medium text-green-900">웹 서버</status-label>
+                    <status-detail class="text-sm text-green-700">정상 운영 중</status-detail>
+                  </div>
+                </status-info>
+                <status-indicator class="w-3 h-3 bg-green-500 rounded-full"></status-indicator>
+              </status-item>
+
+              <status-item class="flex items-center justify-between p-3 bg-green-50 rounded-lg border-l-4 border-green-500">
+                <status-info class="flex items-center">
+                  <icon name="database" class="w-5 h-5 text-green-600 mr-3" />
+                  <div>
+                    <status-label class="font-medium text-green-900">데이터베이스</status-label>
+                    <status-detail class="text-sm text-green-700">연결 정상 (응답시간: 12ms)</status-detail>
+                  </div>
+                </status-info>
+                <status-indicator class="w-3 h-3 bg-green-500 rounded-full"></status-indicator>
+              </status-item>
+
+              <status-item class="flex items-center justify-between p-3 bg-yellow-50 rounded-lg border-l-4 border-yellow-500">
+                <status-info class="flex items-center">
+                  <icon name="brain" class="w-5 h-5 text-yellow-600 mr-3" />
+                  <div>
+                    <status-label class="font-medium text-yellow-900">AI 서비스</status-label>
+                    <status-detail class="text-sm text-yellow-700">높은 부하 (응답시간: 3.2초)</status-detail>
+                  </div>
+                </status-info>
+                <status-indicator class="w-3 h-3 bg-yellow-500 rounded-full"></status-indicator>
+              </status-item>
+
+              <status-item class="flex items-center justify-between p-3 bg-green-50 rounded-lg border-l-4 border-green-500">
+                <status-info class="flex items-center">
+                  <icon name="shield" class="w-5 h-5 text-green-600 mr-3" />
+                  <div>
+                    <status-label class="font-medium text-green-900">보안 시스템</status-label>
+                    <status-detail class="text-sm text-green-700">모든 검사 통과</status-detail>
+                  </div>
+                </status-info>
+                <status-indicator class="w-3 h-3 bg-green-500 rounded-full"></status-indicator>
+              </status-item>
+            </system-status>
+          </card>
+
+          <!-- 월간 통계 -->
+          <card>
+            <header class="mb-4">
+              <title class="text-lg font-semibold">이번 달 통계</title>
+            </header>
+
+            <monthly-stats class="space-y-4">
+              <stat-item class="flex items-center justify-between">
+                <stat-label class="text-gray-700">신규 가입자</stat-label>
+                <stat-value class="font-semibold text-gray-900">324명</stat-value>
+              </stat-item>
+
+              <stat-item class="flex items-center justify-between">
+                <stat-label class="text-gray-700">보상금 신청</stat-label>
+                <stat-value class="font-semibold text-gray-900">456건</stat-value>
+              </stat-item>
+
+              <stat-item class="flex items-center justify-between">
+                <stat-label class="text-gray-700">승인률</stat-label>
+                <stat-value class="font-semibold text-green-600">87.3%</stat-value>
+              </stat-item>
+
+              <stat-item class="flex items-center justify-between">
+                <stat-label class="text-gray-700">평균 처리 시간</stat-label>
+                <stat-value class="font-semibold text-blue-600">2.3일</stat-value>
+              </stat-item>
+
+              <stat-item class="flex items-center justify-between">
+                <stat-label class="text-gray-700">총 지급 보상금</stat-label>
+                <stat-value class="font-semibold text-purple-600">15.8억원</stat-value>
+              </stat-item>
+
+              <stat-item class="flex items-center justify-between">
+                <stat-label class="text-gray-700">상담 완료</stat-label>
+                <stat-value class="font-semibold text-gray-900">234건</stat-value>
+              </stat-item>
+
+              <stat-item class="flex items-center justify-between">
+                <stat-label class="text-gray-700">AI 분석 요청</stat-label>
+                <stat-value class="font-semibold text-orange-600">1,234건</stat-value>
+              </stat-item>
+            </monthly-stats>
+          </card>
+
+          <!-- 빠른 액션 -->
+          <card>
+            <header class="mb-4">
+              <title class="text-lg font-semibold">빠른 액션</title>
+            </header>
+
+            <quick-actions class="grid grid-cols-2 gap-3">
+              <action-button href="/admin/applications" class="flex flex-col items-center p-4 border rounded-lg hover:bg-gray-50">
+                <icon name="file-text" class="w-6 h-6 text-blue-600 mb-2" />
+                <label class="text-sm font-medium">보상금 관리</label>
+              </action-button>
+
+              <action-button href="/admin/users" class="flex flex-col items-center p-4 border rounded-lg hover:bg-gray-50">
+                <icon name="users" class="w-6 h-6 text-green-600 mb-2" />
+                <label class="text-sm font-medium">사용자 관리</label>
+              </action-button>
+
+              <action-button href="/admin/lawyers" class="flex flex-col items-center p-4 border rounded-lg hover:bg-gray-50">
+                <icon name="scale" class="w-6 h-6 text-purple-600 mb-2" />
+                <label class="text-sm font-medium">노무사 관리</label>
+              </action-button>
+
+              <action-button href="/admin/analytics" class="flex flex-col items-center p-4 border rounded-lg hover:bg-gray-50">
+                <icon name="bar-chart" class="w-6 h-6 text-orange-600 mb-2" />
+                <label class="text-sm font-medium">분석 리포트</label>
+              </action-button>
+
+              <action-button href="/admin/settings" class="flex flex-col items-center p-4 border rounded-lg hover:bg-gray-50">
+                <icon name="settings" class="w-6 h-6 text-gray-600 mb-2" />
+                <label class="text-sm font-medium">시스템 설정</label>
+              </action-button>
+
+              <action-button href="/admin/logs" class="flex flex-col items-center p-4 border rounded-lg hover:bg-gray-50">
+                <icon name="file-search" class="w-6 h-6 text-red-600 mb-2" />
+                <label class="text-sm font-medium">시스템 로그</label>
+              </action-button>
+            </quick-actions>
+          </card>
+        </right-column>
+      </grid>
+
+      <!-- 하단 알림 -->
+      <alerts-section class="mt-8">
+        <alert class="p-4 bg-blue-50 border border-blue-200 rounded-lg">
+          <alert-header class="flex items-center mb-2">
+            <icon name="info" class="w-5 h-5 text-blue-600 mr-2" />
+            <title class="font-medium text-blue-900">시스템 점검 예정</title>
+          </alert-header>
+          <alert-content class="text-blue-700 text-sm">
+            2024년 2월 1일 (목) 02:00 ~ 04:00 정기 점검이 예정되어 있습니다.
+            해당 시간 중에는 서비스 이용이 제한될 수 있습니다.
+          </alert-content>
+        </alert>
+      </alerts-section>
+    </container>
+  </layout>
+</page>

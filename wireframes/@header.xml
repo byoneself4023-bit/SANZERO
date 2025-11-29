@@ -1,0 +1,115 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- 공통 헤더 컴포넌트 -->
+<component name="header" title="SANZERO 공통 헤더">
+  <header class="border-b border-gray-200 bg-white sticky top-0 z-50">
+    <container class="max-w-7xl mx-auto px-4">
+      <nav class="flex items-center justify-between h-16">
+        <!-- 로고 및 브랜드 -->
+        <div class="flex items-center">
+          <link href="/" class="flex items-center space-x-2">
+            <icon name="shield-check" class="w-8 h-8 text-primary-600" />
+            <text class="text-xl font-bold text-gray-900">SANZERO</text>
+          </link>
+        </div>
+
+        <!-- 메인 네비게이션 -->
+        <nav-menu class="hidden md:flex items-center space-x-8">
+          <nav-item href="/compensation" class="text-gray-700 hover:text-primary-600 font-medium">
+            보상금 관리
+          </nav-item>
+          <nav-item href="/analysis" class="text-gray-700 hover:text-primary-600 font-medium">
+            AI 분석
+          </nav-item>
+          <nav-item href="/lawyers" class="text-gray-700 hover:text-primary-600 font-medium">
+            노무사 서비스
+          </nav-item>
+          <nav-item href="/chat" class="text-gray-700 hover:text-primary-600 font-medium">
+            AI 챗봇
+          </nav-item>
+        </nav-menu>
+
+        <!-- 사용자 메뉴 -->
+        <div class="flex items-center space-x-4">
+          <conditional condition="user_not_logged_in">
+            <link href="/auth/login" class="text-gray-700 hover:text-primary-600 font-medium">
+              로그인
+            </link>
+            <link href="/auth/signup" class="bg-primary-600 text-white px-4 py-2 rounded-md font-medium hover:bg-primary-700">
+              회원가입
+            </link>
+          </conditional>
+
+          <conditional condition="user_logged_in">
+            <!-- 알림 버튼 -->
+            <button class="relative p-2 text-gray-600 hover:text-primary-600">
+              <icon name="bell" class="w-5 h-5" />
+              <badge class="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
+                3
+              </badge>
+            </button>
+
+            <!-- 사용자 드롭다운 -->
+            <dropdown class="relative">
+              <dropdown-trigger class="flex items-center space-x-2 p-2 text-gray-700 hover:text-primary-600">
+                <avatar class="w-8 h-8 bg-gray-300 rounded-full flex items-center justify-center">
+                  <icon name="user" class="w-4 h-4" />
+                </avatar>
+                <text class="font-medium">{username}</text>
+                <icon name="chevron-down" class="w-4 h-4" />
+              </dropdown-trigger>
+
+              <dropdown-menu class="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg border border-gray-200">
+                <dropdown-item href="/auth/profile" class="flex items-center px-4 py-2 text-gray-700 hover:bg-gray-50">
+                  <icon name="user" class="w-4 h-4 mr-3" />
+                  프로필 관리
+                </dropdown-item>
+
+                <conditional condition="user_type_lawyer">
+                  <dropdown-item href="/lawyers/manage" class="flex items-center px-4 py-2 text-gray-700 hover:bg-gray-50">
+                    <icon name="briefcase" class="w-4 h-4 mr-3" />
+                    상담 관리
+                  </dropdown-item>
+                </conditional>
+
+                <conditional condition="user_type_admin">
+                  <dropdown-item href="/admin" class="flex items-center px-4 py-2 text-gray-700 hover:bg-gray-50">
+                    <icon name="shield" class="w-4 h-4 mr-3" />
+                    관리자
+                  </dropdown-item>
+                </conditional>
+
+                <dropdown-divider />
+
+                <dropdown-item href="/auth/logout" class="flex items-center px-4 py-2 text-red-600 hover:bg-red-50">
+                  <icon name="log-out" class="w-4 h-4 mr-3" />
+                  로그아웃
+                </dropdown-item>
+              </dropdown-menu>
+            </dropdown>
+          </conditional>
+
+          <!-- 모바일 메뉴 버튼 -->
+          <button class="md:hidden p-2 text-gray-600" id="mobile-menu-button">
+            <icon name="menu" class="w-6 h-6" />
+          </button>
+        </div>
+      </nav>
+
+      <!-- 모바일 메뉴 -->
+      <mobile-menu class="md:hidden hidden border-t border-gray-200 py-4" id="mobile-menu">
+        <nav-item href="/compensation" class="block px-4 py-2 text-gray-700 hover:bg-gray-50">
+          보상금 관리
+        </nav-item>
+        <nav-item href="/analysis" class="block px-4 py-2 text-gray-700 hover:bg-gray-50">
+          AI 분석
+        </nav-item>
+        <nav-item href="/lawyers" class="block px-4 py-2 text-gray-700 hover:bg-gray-50">
+          노무사 서비스
+        </nav-item>
+        <nav-item href="/chat" class="block px-4 py-2 text-gray-700 hover:bg-gray-50">
+          AI 챗봇
+        </nav-item>
+      </mobile-menu>
+    </container>
+  </header>
+</component>

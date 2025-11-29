@@ -1,0 +1,431 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- 노무사 검색/매칭 페이지 -->
+<page name="lawyers-search" title="노무사 검색 - SANZERO">
+  <layout type="main">
+    <!-- 페이지 헤더 -->
+    <section class="page-header">
+      <container class="max-w-7xl mx-auto px-4 py-8">
+        <breadcrumb>
+          <link href="/">홈</link>
+          <link href="/lawyers">노무사 서비스</link>
+          <current>노무사 검색</current>
+        </breadcrumb>
+
+        <heading level="1" class="text-3xl font-bold text-gray-900 mb-2">
+          전문 노무사 검색
+        </heading>
+        <text class="text-gray-600">
+          AI 기반 매칭으로 귀하의 사건에 가장 적합한 노무사를 찾아보세요
+        </text>
+      </container>
+    </section>
+
+    <!-- AI 매칭 영역 -->
+    <section class="ai-matching bg-gradient-to-r from-blue-50 to-indigo-50 py-8">
+      <container class="max-w-7xl mx-auto px-4">
+        <card class="ai-matching-card">
+          <header class="text-center mb-6">
+            <icon name="brain" class="w-12 h-12 text-blue-600 mx-auto mb-3" />
+            <title class="text-xl font-semibold text-gray-900">AI 맞춤 노무사 추천</title>
+            <description class="text-gray-600">
+              귀하의 사건 정보를 바탕으로 최적의 노무사 3명을 추천해드립니다
+            </description>
+          </header>
+
+          <conditional condition="has_application">
+            <div class="bg-white p-4 rounded-lg border mb-4">
+              <div class="flex items-center justify-between">
+                <div>
+                  <title class="font-medium">보상금 신청서 #APP-2024-001</title>
+                  <description class="text-sm text-gray-600">작업 중 계단에서 미끄러져 발목 부상</description>
+                </div>
+                <button class="primary">AI 매칭 시작</button>
+              </div>
+            </div>
+          </conditional>
+
+          <conditional condition="no_application">
+            <div class="text-center">
+              <text class="text-gray-600 mb-4">
+                보상금 신청서가 있으면 더 정확한 매칭이 가능합니다
+              </text>
+              <button href="/compensation/apply" class="primary-outline">
+                신청서 작성하기
+              </button>
+            </div>
+          </conditional>
+        </card>
+      </container>
+    </section>
+
+    <!-- 검색 필터 -->
+    <section class="search-filters">
+      <container class="max-w-7xl mx-auto px-4">
+        <card class="mb-6">
+          <form class="search-form">
+            <grid class="grid-cols-1 md:grid-cols-4 gap-4 items-end">
+              <field>
+                <label>지역</label>
+                <select name="location">
+                  <option value="">전체 지역</option>
+                  <option value="서울">서울특별시</option>
+                  <option value="경기">경기도</option>
+                  <option value="인천">인천광역시</option>
+                  <option value="부산">부산광역시</option>
+                  <option value="대구">대구광역시</option>
+                </select>
+              </field>
+
+              <field>
+                <label>전문 분야</label>
+                <select name="specialty">
+                  <option value="">전체 분야</option>
+                  <option value="산업재해">산업재해</option>
+                  <option value="근로기준법">근로기준법</option>
+                  <option value="산업안전">산업안전</option>
+                  <option value="직업병">직업병</option>
+                  <option value="건설업">건설업</option>
+                </select>
+              </field>
+
+              <field>
+                <label>정렬 기준</label>
+                <select name="sort">
+                  <option value="rating">평점 높은 순</option>
+                  <option value="experience">경력 많은 순</option>
+                  <option value="success_rate">성공률 높은 순</option>
+                  <option value="response_time">빠른 응답 순</option>
+                  <option value="fee">상담료 낮은 순</option>
+                </select>
+              </field>
+
+              <button type="submit" class="primary">
+                검색
+              </button>
+            </grid>
+
+            <!-- 고급 필터 토글 -->
+            <advanced-filters class="mt-4" style="display: none;">
+              <grid class="grid-cols-1 md:grid-cols-3 gap-4">
+                <field>
+                  <label>경력 년수</label>
+                  <range-input name="experience_years" min="0" max="30" value="5" />
+                </field>
+
+                <field>
+                  <label>상담료 범위</label>
+                  <range-input name="consultation_fee" min="0" max="500000" step="10000" />
+                </field>
+
+                <field>
+                  <label>성공률</label>
+                  <range-input name="success_rate" min="0" max="100" value="70" suffix="%" />
+                </field>
+              </grid>
+            </advanced-filters>
+
+            <button type="button" class="text-blue-600 text-sm mt-2" onclick="toggleAdvancedFilters()">
+              고급 필터 옵션
+            </button>
+          </form>
+        </card>
+      </container>
+    </section>
+
+    <!-- 노무사 목록 -->
+    <section class="lawyers-list">
+      <container class="max-w-7xl mx-auto px-4">
+        <header class="flex justify-between items-center mb-6">
+          <div>
+            <title class="text-lg font-semibold">검색 결과</title>
+            <text class="text-sm text-gray-600">총 127명의 노무사가 검색되었습니다</text>
+          </div>
+          <view-toggle>
+            <button class="active" data-view="list">목록</button>
+            <button data-view="grid">격자</button>
+          </view-toggle>
+        </header>
+
+        <div class="space-y-6">
+          <!-- 추천 노무사 (AI 매칭) -->
+          <conditional condition="has_ai_recommendations">
+            <section class="recommended-lawyers mb-8">
+              <header class="flex items-center mb-4">
+                <icon name="star" class="text-yellow-500 mr-2" />
+                <title class="text-lg font-semibold text-gray-900">AI 추천 노무사</title>
+                <badge class="ml-2 bg-blue-100 text-blue-800">매칭도 95%+</badge>
+              </header>
+
+              <grid class="grid-cols-1 md:grid-cols-3 gap-6">
+                <lawyer-card class="recommended">
+                  <header class="flex items-start justify-between mb-3">
+                    <avatar>
+                      <img src="/images/lawyer1.jpg" alt="김노무사" />
+                      <verified-badge>인증</verified-badge>
+                    </avatar>
+                    <match-score class="bg-green-100 text-green-800">
+                      매칭도 98%
+                    </match-score>
+                  </header>
+
+                  <content>
+                    <name class="text-lg font-semibold">김노무사</name>
+                    <office class="text-gray-600">김앤파트너스 노무법인</office>
+                    <location class="text-sm text-gray-500">서울 강남구</location>
+
+                    <specialties class="mt-2 mb-3">
+                      <tag>산업재해</tag>
+                      <tag>건설업</tag>
+                      <tag>직업병</tag>
+                    </specialties>
+
+                    <stats class="grid grid-cols-2 gap-2 text-sm">
+                      <stat-item>
+                        <label>경력</label>
+                        <value>15년</value>
+                      </stat-item>
+                      <stat-item>
+                        <label>성공률</label>
+                        <value>94%</value>
+                      </stat-item>
+                      <stat-item>
+                        <label>평점</label>
+                        <value>
+                          <stars rating="4.9" />
+                          4.9 (127)
+                        </value>
+                      </stat-item>
+                      <stat-item>
+                        <label>상담료</label>
+                        <value>15만원</value>
+                      </stat-item>
+                    </stats>
+
+                    <match-reasons class="mt-3 p-2 bg-blue-50 rounded text-xs">
+                      <title class="font-medium text-blue-900">추천 이유</title>
+                      <list class="text-blue-700">
+                        <item>• 발목 부상 사례 50건+ 경험</item>
+                        <item>• IT업계 산재 전문</item>
+                        <item>• 평균 응답시간 2시간</item>
+                      </list>
+                    </match-reasons>
+                  </content>
+
+                  <actions class="mt-4 flex gap-2">
+                    <button href="/lawyers/1" class="primary flex-1">상세 보기</button>
+                    <button href="/lawyers/1/consult" class="secondary">상담 예약</button>
+                  </actions>
+                </lawyer-card>
+
+                <lawyer-card class="recommended">
+                  <header class="flex items-start justify-between mb-3">
+                    <avatar>
+                      <img src="/images/lawyer2.jpg" alt="이노무사" />
+                      <verified-badge>인증</verified-badge>
+                    </avatar>
+                    <match-score class="bg-green-100 text-green-800">
+                      매칭도 96%
+                    </match-score>
+                  </header>
+
+                  <content>
+                    <name class="text-lg font-semibold">이노무사</name>
+                    <office class="text-gray-600">이앤김 노무법인</office>
+                    <location class="text-sm text-gray-500">서울 서초구</location>
+
+                    <specialties class="mt-2 mb-3">
+                      <tag>산업재해</tag>
+                      <tag>근로기준법</tag>
+                      <tag>산업안전</tag>
+                    </specialties>
+
+                    <stats class="grid grid-cols-2 gap-2 text-sm">
+                      <stat-item>
+                        <label>경력</label>
+                        <value>12년</value>
+                      </stat-item>
+                      <stat-item>
+                        <label>성공률</label>
+                        <value>91%</value>
+                      </stat-item>
+                      <stat-item>
+                        <label>평점</label>
+                        <value>
+                          <stars rating="4.8" />
+                          4.8 (89)
+                        </value>
+                      </stat-item>
+                      <stat-item>
+                        <label>상담료</label>
+                        <value>12만원</value>
+                      </stat-item>
+                    </stats>
+
+                    <match-reasons class="mt-3 p-2 bg-blue-50 rounded text-xs">
+                      <title class="font-medium text-blue-900">추천 이유</title>
+                      <list class="text-blue-700">
+                        <item>• 염좌/타박상 전문</item>
+                        <item>• 중소기업 근로자 특화</item>
+                        <item>• 빠른 상담 스케줄</item>
+                      </list>
+                    </match-reasons>
+                  </content>
+
+                  <actions class="mt-4 flex gap-2">
+                    <button href="/lawyers/2" class="primary flex-1">상세 보기</button>
+                    <button href="/lawyers/2/consult" class="secondary">상담 예약</button>
+                  </actions>
+                </lawyer-card>
+
+                <lawyer-card class="recommended">
+                  <header class="flex items-start justify-between mb-3">
+                    <avatar>
+                      <img src="/images/lawyer3.jpg" alt="박노무사" />
+                      <verified-badge>인증</verified-badge>
+                    </avatar>
+                    <match-score class="bg-green-100 text-green-800">
+                      매칭도 95%
+                    </match-score>
+                  </header>
+
+                  <content>
+                    <name class="text-lg font-semibold">박노무사</name>
+                    <office class="text-gray-600">박앤어소시에이츠</office>
+                    <location class="text-sm text-gray-500">서울 영등포구</location>
+
+                    <specialties class="mt-2 mb-3">
+                      <tag>산업재해</tag>
+                      <tag>직업병</tag>
+                      <tag>보상금</tag>
+                    </specialties>
+
+                    <stats class="grid grid-cols-2 gap-2 text-sm">
+                      <stat-item>
+                        <label>경력</label>
+                        <value>18년</value>
+                      </stat-item>
+                      <stat-item>
+                        <label>성공률</label>
+                        <value>96%</value>
+                      </stat-item>
+                      <stat-item>
+                        <label>평점</label>
+                        <value>
+                          <stars rating="4.9" />
+                          4.9 (156)
+                        </value>
+                      </stat-item>
+                      <stat-item>
+                        <label>상담료</label>
+                        <value>18만원</value>
+                      </stat-item>
+                    </stats>
+
+                    <match-reasons class="mt-3 p-2 bg-blue-50 rounded text-xs">
+                      <title class="font-medium text-blue-900">추천 이유</title>
+                      <list class="text-blue-700">
+                        <item>• 최고 성공률 (96%)</item>
+                        <item>• 대형 사건 경험 풍부</item>
+                        <item>• 의료진 네트워크 보유</item>
+                      </list>
+                    </match-reasons>
+                  </content>
+
+                  <actions class="mt-4 flex gap-2">
+                    <button href="/lawyers/3" class="primary flex-1">상세 보기</button>
+                    <button href="/lawyers/3/consult" class="secondary">상담 예약</button>
+                  </actions>
+                </lawyer-card>
+              </grid>
+            </section>
+          </conditional>
+
+          <!-- 일반 노무사 목록 -->
+          <section class="general-lawyers">
+            <header class="mb-4">
+              <title class="text-lg font-semibold text-gray-900">모든 노무사</title>
+            </header>
+
+            <div class="space-y-4">
+              <!-- 노무사 카드들 -->
+              <lawyer-card class="horizontal">
+                <div class="flex items-start space-x-4">
+                  <avatar>
+                    <img src="/images/lawyer4.jpg" alt="최노무사" />
+                    <verified-badge>인증</verified-badge>
+                  </avatar>
+
+                  <content class="flex-1">
+                    <header class="flex justify-between items-start mb-2">
+                      <div>
+                        <name class="text-lg font-semibold">최노무사</name>
+                        <office class="text-gray-600">최앤김 법률사무소</office>
+                        <location class="text-sm text-gray-500">서울 종로구</location>
+                      </div>
+                      <availability class="text-xs text-green-600 bg-green-50 px-2 py-1 rounded">
+                        상담 가능
+                      </availability>
+                    </header>
+
+                    <specialties class="mb-3">
+                      <tag>산업재해</tag>
+                      <tag>근로기준법</tag>
+                      <tag>정신적 피해</tag>
+                    </specialties>
+
+                    <stats class="grid grid-cols-4 gap-4 text-sm mb-3">
+                      <stat-item>
+                        <label>경력</label>
+                        <value>10년</value>
+                      </stat-item>
+                      <stat-item>
+                        <label>성공률</label>
+                        <value>88%</value>
+                      </stat-item>
+                      <stat-item>
+                        <label>평점</label>
+                        <value>
+                          <stars rating="4.7" />
+                          4.7 (67)
+                        </value>
+                      </stat-item>
+                      <stat-item>
+                        <label>상담료</label>
+                        <value>10만원</value>
+                      </stat-item>
+                    </stats>
+
+                    <description class="text-sm text-gray-600 mb-3">
+                      정신적 피해 및 스트레스성 질환 전문. 대기업 산재 사건 다수 경험.
+                    </description>
+                  </content>
+
+                  <actions class="flex flex-col gap-2">
+                    <button href="/lawyers/4" class="primary-outline">상세 보기</button>
+                    <button href="/lawyers/4/consult" class="secondary">상담 예약</button>
+                  </actions>
+                </div>
+              </lawyer-card>
+
+              <!-- 추가 노무사 카드들... -->
+            </div>
+          </section>
+        </div>
+
+        <!-- 페이지네이션 -->
+        <pagination class="mt-8">
+          <page-info>총 127명 중 1-10명 표시</page-info>
+          <page-controls>
+            <button class="prev" disabled>이전</button>
+            <page-number class="active">1</page-number>
+            <page-number>2</page-number>
+            <page-number>3</page-number>
+            <span>...</span>
+            <page-number>13</page-number>
+            <button class="next">다음</button>
+          </page-controls>
+        </pagination>
+      </container>
+    </section>
+  </layout>
+</page>

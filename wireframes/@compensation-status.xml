@@ -1,0 +1,268 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- 신청 현황 조회 페이지 -->
+<page name="compensation-status" title="신청 현황 - SANZERO">
+  <layout type="main">
+    <!-- 페이지 헤더 -->
+    <section class="page-header">
+      <container class="max-w-7xl mx-auto px-4 py-8">
+        <breadcrumb>
+          <link href="/">홈</link>
+          <link href="/compensation">보상금 관리</link>
+          <current>신청 현황</current>
+        </breadcrumb>
+
+        <div class="flex justify-between items-center">
+          <div>
+            <heading level="1" class="text-3xl font-bold text-gray-900 mb-2">
+              신청 현황 조회
+            </heading>
+            <text class="text-gray-600">
+              제출하신 보상금 신청서의 처리 현황을 확인하세요
+            </text>
+          </div>
+          <button href="/compensation/apply" class="primary">
+            새 신청서 작성
+          </button>
+        </div>
+      </container>
+    </section>
+
+    <!-- 필터 및 검색 -->
+    <section class="filters">
+      <container class="max-w-7xl mx-auto px-4">
+        <card class="mb-6">
+          <form class="flex flex-wrap gap-4 items-end">
+            <field>
+              <label>상태</label>
+              <select name="status">
+                <option value="">전체</option>
+                <option value="pending">대기 중</option>
+                <option value="reviewing">검토 중</option>
+                <option value="approved">승인됨</option>
+                <option value="rejected">거부됨</option>
+                <option value="completed">완료됨</option>
+              </select>
+            </field>
+
+            <field>
+              <label>신청일</label>
+              <date-range>
+                <input name="start_date" type="date" placeholder="시작일" />
+                <span>~</span>
+                <input name="end_date" type="date" placeholder="종료일" />
+              </date-range>
+            </field>
+
+            <field>
+              <label>검색</label>
+              <search-input name="search" placeholder="신청서 번호, 부상 유형 등..." />
+            </field>
+
+            <button type="submit" class="primary">검색</button>
+            <button type="reset" class="secondary">초기화</button>
+          </form>
+        </card>
+      </container>
+    </section>
+
+    <!-- 신청서 목록 -->
+    <section class="applications-list">
+      <container class="max-w-7xl mx-auto px-4">
+        <conditional condition="has_applications">
+          <div class="space-y-6">
+            <!-- 신청서 카드 1 -->
+            <card class="application-card">
+              <header class="flex justify-between items-start">
+                <div>
+                  <div class="flex items-center gap-2 mb-2">
+                    <status-badge class="pending">대기 중</status-badge>
+                    <text class="text-sm text-gray-500">신청번호: APP-2024-001</text>
+                  </div>
+                  <title class="text-lg font-semibold">작업 중 계단에서 미끄러져 발목 부상</title>
+                  <metadata class="text-sm text-gray-600 mt-1">
+                    <span>신청일: 2024-01-15</span>
+                    <span>•</span>
+                    <span>부상: 발목 염좌</span>
+                    <span>•</span>
+                    <span>예상 보상금: 6,050,000원</span>
+                  </metadata>
+                </div>
+                <action-menu>
+                  <button class="menu-trigger">⋯</button>
+                  <menu-items>
+                    <menu-item href="/compensation/applications/1">상세 보기</menu-item>
+                    <menu-item href="/compensation/applications/1/edit">수정하기</menu-item>
+                    <menu-item action="cancel" class="danger">신청 취소</menu-item>
+                  </menu-items>
+                </action-menu>
+              </header>
+
+              <progress-section class="mt-4">
+                <progress-bar value="25" max="100">
+                  <step class="completed">신청 접수</step>
+                  <step class="active">서류 검토</step>
+                  <step>AI 분석</step>
+                  <step>최종 심사</step>
+                  <step>결과 통보</step>
+                </progress-bar>
+
+                <current-status class="mt-2">
+                  <icon name="clock" class="text-yellow-500" />
+                  <text>서류 검토 중입니다. 예상 완료: 2024-01-22</text>
+                </current-status>
+              </progress-section>
+
+              <actions class="mt-4 flex gap-2">
+                <button href="/compensation/applications/1" class="primary-outline">
+                  상세 보기
+                </button>
+                <button href="/lawyers/match/1" class="secondary">
+                  노무사 상담
+                </button>
+              </actions>
+            </card>
+
+            <!-- 신청서 카드 2 -->
+            <card class="application-card">
+              <header class="flex justify-between items-start">
+                <div>
+                  <div class="flex items-center gap-2 mb-2">
+                    <status-badge class="approved">승인됨</status-badge>
+                    <text class="text-sm text-gray-500">신청번호: APP-2023-142</text>
+                  </div>
+                  <title class="text-lg font-semibold">기계 조작 중 손가락 절단 사고</title>
+                  <metadata class="text-sm text-gray-600 mt-1">
+                    <span>신청일: 2023-11-20</span>
+                    <span>•</span>
+                    <span>부상: 손가락 절단</span>
+                    <span>•</span>
+                    <span>승인 보상금: 7,128,000원</span>
+                  </metadata>
+                </div>
+                <action-menu>
+                  <button class="menu-trigger">⋯</button>
+                  <menu-items>
+                    <menu-item href="/compensation/applications/2">상세 보기</menu-item>
+                    <menu-item href="/compensation/applications/2/receipt">지급 확인서</menu-item>
+                  </menu-items>
+                </action-menu>
+              </header>
+
+              <progress-section class="mt-4">
+                <progress-bar value="100" max="100">
+                  <step class="completed">신청 접수</step>
+                  <step class="completed">서류 검토</step>
+                  <step class="completed">AI 분석</step>
+                  <step class="completed">최종 심사</step>
+                  <step class="completed">결과 통보</step>
+                </progress-bar>
+
+                <current-status class="mt-2">
+                  <icon name="check" class="text-green-500" />
+                  <text>보상금이 지급 완료되었습니다. (2024-01-10)</text>
+                </current-status>
+              </progress-section>
+
+              <actions class="mt-4 flex gap-2">
+                <button href="/compensation/applications/2" class="primary-outline">
+                  상세 보기
+                </button>
+                <button href="/compensation/applications/2/receipt" class="secondary">
+                  지급 확인서
+                </button>
+              </actions>
+            </card>
+
+            <!-- 신청서 카드 3 -->
+            <card class="application-card">
+              <header class="flex justify-between items-start">
+                <div>
+                  <div class="flex items-center gap-2 mb-2">
+                    <status-badge class="reviewing">검토 중</status-badge>
+                    <text class="text-sm text-gray-500">신청번호: APP-2024-015</text>
+                  </div>
+                  <title class="text-lg font-semibold">화학물질 노출로 인한 피부염</title>
+                  <metadata class="text-sm text-gray-600 mt-1">
+                    <span>신청일: 2024-01-20</span>
+                    <span>•</span>
+                    <span>부상: 피부염</span>
+                    <span>•</span>
+                    <span>AI 예측 보상금: 3,200,000원</span>
+                  </metadata>
+                </div>
+              </header>
+
+              <progress-section class="mt-4">
+                <progress-bar value="60" max="100">
+                  <step class="completed">신청 접수</step>
+                  <step class="completed">서류 검토</step>
+                  <step class="active">AI 분석</step>
+                  <step>최종 심사</step>
+                  <step>결과 통보</step>
+                </progress-bar>
+
+                <current-status class="mt-2">
+                  <icon name="cpu" class="text-blue-500" />
+                  <text>AI 분석 중입니다. 승인 확률: 85%</text>
+                </current-status>
+              </progress-section>
+
+              <ai-analysis class="mt-4 p-4 bg-blue-50 rounded-lg">
+                <title class="font-medium text-blue-900 mb-2">AI 분석 결과</title>
+                <analysis-item>
+                  <label>유사 사례 매칭:</label>
+                  <value>152건 (평균 승인률 82%)</value>
+                </analysis-item>
+                <analysis-item>
+                  <label>예상 처리 기간:</label>
+                  <value>7-10일</value>
+                </analysis-item>
+                <analysis-item>
+                  <label>추천 노무사:</label>
+                  <value>김노무사 (화학물질 전문, 매칭도 95%)</value>
+                </analysis-item>
+              </ai-analysis>
+
+              <actions class="mt-4 flex gap-2">
+                <button href="/compensation/applications/3" class="primary-outline">
+                  상세 보기
+                </button>
+                <button href="/analysis/results/3" class="secondary">
+                  AI 분석 결과
+                </button>
+              </actions>
+            </card>
+          </div>
+
+          <!-- 페이지네이션 -->
+          <pagination class="mt-8">
+            <page-info>총 15건의 신청서</page-info>
+            <page-controls>
+              <button class="prev" disabled>이전</button>
+              <page-number class="active">1</page-number>
+              <page-number>2</page-number>
+              <page-number>3</page-number>
+              <button class="next">다음</button>
+            </page-controls>
+          </pagination>
+        </conditional>
+
+        <!-- 빈 상태 -->
+        <conditional condition="no_applications">
+          <empty-state class="text-center py-12">
+            <icon name="document" class="gray-300 w-16 h-16 mx-auto mb-4" />
+            <title class="text-xl font-semibold text-gray-900 mb-2">
+              신청서가 없습니다
+            </title>
+            <description class="text-gray-600 mb-6">
+              아직 보상금 신청서를 제출하지 않으셨습니다.
+            </description>
+            <button href="/compensation/apply" class="primary">
+              첫 신청서 작성하기
+            </button>
+          </empty-state>
+        </conditional>
+      </container>
+    </section>
+  </layout>
+</page>

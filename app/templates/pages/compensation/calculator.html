@@ -1,0 +1,547 @@
+{% extends "base.html" %}
+
+{% block title %}산재 보상금 계산기 - SANZERO{% endblock %}
+
+{% block extra_head %}
+{% endblock %}
+
+{% block content %}
+<div class="container mx-auto px-4 py-8 max-w-4xl">
+    <!-- 페이지 헤더 -->
+    <div class="mb-8">
+        <nav class="text-sm breadcrumbs mb-4">
+            <a href="/compensation" class="text-blue-600 hover:text-blue-800">보상금 서비스</a>
+            <span class="mx-2 text-gray-400">></span>
+            <span class="text-gray-600">보상금 계산기</span>
+        </nav>
+        <h1 class="text-3xl font-bold text-gray-900 mb-2">산재 보상금 계산기</h1>
+        <p class="text-gray-600">2025년 기준 정확한 산업재해 보상금을 계산해보세요</p>
+    </div>
+
+    <!-- 기준 정보 안내 -->
+    <div class="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-8">
+        <div class="flex items-start">
+            <svg class="h-5 w-5 text-blue-600 mt-0.5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+            </svg>
+            <div class="text-sm text-blue-800">
+                <p><strong>2025년 기준 적용:</strong> 최저/최고 보상기준금액이 자동 적용됩니다.</p>
+                <p class="mt-1">일급 최저 {{ "{:,}".format(standards.min_daily) }}원 ~ 최고 {{ "{:,}".format(standards.max_daily) }}원</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- 계산기 폼 -->
+    <form id="calculatorForm" hx-post="/compensation/calculate" hx-target="#calculationResult" hx-swap="innerHTML" hx-indicator="#loadingIndicator">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+
+        <!-- 통상임금 계산 섹션 -->
+        <div class="bg-white rounded-lg shadow-md border border-gray-200 p-6 mb-6">
+            <h2 class="text-xl font-semibold text-gray-900 mb-4">통상임금 계산</h2>
+
+            <!-- 계산 방법 선택 -->
+            <div class="mb-6">
+                <label class="block text-sm font-medium text-gray-700 mb-3">통상임금 입력 방법 선택</label>
+                <div class="space-y-3">
+                    <label class="flex items-center">
+                        <input type="radio" name="wage_method" value="direct" class="form-radio text-blue-600" onchange="toggleWageMethod()">
+                        <span class="ml-2 text-sm">방법 1: 직접 계산한 통상임금 입력</span>
+                    </label>
+                    <label class="flex items-center">
+                        <input type="radio" name="wage_method" value="monthly" class="form-radio text-blue-600" checked onchange="toggleWageMethod()">
+                        <span class="ml-2 text-sm">방법 2: 월 통상임금 포함 임금액으로 자동 계산</span>
+                    </label>
+                    <label class="flex items-center">
+                        <input type="radio" name="wage_method" value="skip" class="form-radio text-blue-600" onchange="toggleWageMethod()">
+                        <span class="ml-2 text-sm">방법 3: 통상임금 입력 건너뛰기 (0으로 처리)</span>
+                    </label>
+                </div>
+            </div>
+
+            <!-- 통상임금 입력 -->
+            <div id="wageAmountSection" class="mb-6">
+                <label class="block text-sm font-medium text-gray-700 mb-2" id="wageAmountLabel">월 통상임금 (원)</label>
+                <input type="text" name="wage_amount" id="wageAmount" class="form-input w-full"
+                       placeholder="예: 3,500,000" inputmode="numeric" pattern="[0-9,]*"
+                       oninput="formatCurrency(this)" autocomplete="off">
+                <p class="text-xs text-gray-500 mt-1" id="wageAmountHelp">월 통상임금을 입력하세요</p>
+            </div>
+
+            <!-- 토요일 근무 유형 (방법 2 선택 시만 표시) -->
+            <div id="saturdaySection" class="mb-6">
+                <label class="block text-sm font-medium text-gray-700 mb-3">토요일 처리 방식</label>
+                <div class="space-y-2">
+                    <label class="flex items-center">
+                        <input type="radio" name="saturday_type" value="full_8h" class="form-radio text-blue-600">
+                        <div class="ml-2">
+                            <span class="text-sm font-medium">토요일 유급 8시간</span>
+                            <span class="text-xs text-gray-500 block">월 243시간 기준 ((40+8+8) × 4.345주)</span>
+                        </div>
+                    </label>
+                    <label class="flex items-center">
+                        <input type="radio" name="saturday_type" value="half_4h" class="form-radio text-blue-600">
+                        <div class="ml-2">
+                            <span class="text-sm font-medium">토요일 유급 4시간</span>
+                            <span class="text-xs text-gray-500 block">월 226시간 기준 ((40+4+8) × 4.345주)</span>
+                        </div>
+                    </label>
+                    <label class="flex items-center">
+                        <input type="radio" name="saturday_type" value="no_pay" class="form-radio text-blue-600" checked>
+                        <div class="ml-2">
+                            <span class="text-sm font-medium">토요일 무급</span>
+                            <span class="text-xs text-gray-500 block">월 209시간 기준 ((40+0+8) × 4.345주)</span>
+                        </div>
+                    </label>
+                </div>
+            </div>
+        </div>
+
+        <!-- 계산 옵션 섹션 -->
+        <div class="bg-white rounded-lg shadow-md border border-gray-200 p-6 mb-6">
+            <h2 class="text-xl font-semibold text-gray-900 mb-4">계산 옵션</h2>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <!-- 계산 기준일 -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">계산 기준일</label>
+                    <input type="date" name="calculation_date" id="calculationDate" class="form-input w-full"
+                           min="2025-01-01" max="2025-12-31" required>
+                    <p class="text-xs text-gray-500 mt-1">YYYY-MM-DD 형식 (예: 2025-10-28)</p>
+                </div>
+
+                <!-- 부상 유형 (노무사 추천용) -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">부상 유형 (선택사항)</label>
+                    <select name="injury_type" class="form-select w-full">
+                        <option value="기타">선택하지 않음</option>
+                        <optgroup label="근골격계 질환">
+                            <option value="발목 염좌">발목 염좌</option>
+                            <option value="손목 부상">손목 부상</option>
+                            <option value="허리 부상">허리 부상</option>
+                            <option value="무릎 부상">무릎 부상</option>
+                            <option value="어깨 부상">어깨 부상</option>
+                        </optgroup>
+                        <optgroup label="절단 및 외상">
+                            <option value="손가락 절단">손가락 절단</option>
+                            <option value="발가락 절단">발가락 절단</option>
+                            <option value="팔 절단">팔 절단</option>
+                            <option value="다리 절단">다리 절단</option>
+                        </optgroup>
+                        <optgroup label="화상">
+                            <option value="화상">화상</option>
+                            <option value="전기 화상">전기 화상</option>
+                        </optgroup>
+                        <optgroup label="호흡기 질환">
+                            <option value="진폐증">진폐증</option>
+                            <option value="폐질환">폐질환</option>
+                            <option value="천식">천식</option>
+                        </optgroup>
+                        <optgroup label="청력 손실">
+                            <option value="소음성 난청">소음성 난청</option>
+                            <option value="돌발성 난청">돌발성 난청</option>
+                        </optgroup>
+                        <optgroup label="심혈관계 질환">
+                            <option value="급성 심근경색">급성 심근경색</option>
+                            <option value="뇌출혈">뇌출혈</option>
+                            <option value="뇌경색">뇌경색</option>
+                        </optgroup>
+                        <optgroup label="정신적 질환">
+                            <option value="우울증">우울증</option>
+                            <option value="PTSD">PTSD</option>
+                            <option value="적응장애">적응장애</option>
+                        </optgroup>
+                    </select>
+                    <p class="text-xs text-gray-500 mt-1">전문 노무사 추천을 위해 선택하세요</p>
+                </div>
+
+                <!-- 장해등급 -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">장해등급 (선택사항)</label>
+                    <select name="disability_grade" class="form-select w-full">
+                        <option value="">선택하지 않음</option>
+                        <option value="1급">1급 (연금)</option>
+                        <option value="2급">2급 (연금)</option>
+                        <option value="3급">3급 (연금)</option>
+                        <option value="4급">4급 (일시금)</option>
+                        <option value="5급">5급 (일시금)</option>
+                        <option value="6급">6급 (일시금)</option>
+                        <option value="7급">7급 (일시금)</option>
+                        <option value="8급">8급 (일시금)</option>
+                        <option value="9급">9급 (일시금)</option>
+                        <option value="10급">10급 (일시금)</option>
+                        <option value="11급">11급 (일시금)</option>
+                        <option value="12급">12급 (일시금)</option>
+                        <option value="13급">13급 (일시금)</option>
+                        <option value="14급">14급 (일시금)</option>
+                    </select>
+                    <p class="text-xs text-gray-500 mt-1">제1급, 유족 1명 기준으로 계산</p>
+                </div>
+
+                <!-- 유족 수 -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">유족 수</label>
+                    <input type="number" name="survivors_count" class="form-input w-full"
+                           value="1" min="1" max="10">
+                    <p class="text-xs text-gray-500 mt-1">유족급여 계산용 (기본 47% + 가산)</p>
+                </div>
+
+                <!-- 한도 적용 -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">보상기준 한도 적용</label>
+                    <label class="flex items-center">
+                        <input type="checkbox" name="apply_limits" class="form-checkbox text-blue-600" checked>
+                        <span class="ml-2 text-sm">최저/최고 보상기준금액 적용</span>
+                    </label>
+                    <p class="text-xs text-gray-500 mt-1">2025년 기준 자동 적용 권장</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- 계산 버튼 -->
+        <div class="text-center mb-8">
+            <button type="submit" class="bg-blue-600 text-white px-8 py-3 rounded-lg hover:bg-blue-700 transition-colors font-medium">
+                <svg class="h-5 w-5 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z"></path>
+                </svg>
+                보상금 계산하기
+            </button>
+            <div id="loadingIndicator" class="hidden mt-4">
+                <div class="inline-flex items-center">
+                    <svg class="animate-spin h-5 w-5 text-blue-600 mr-2" fill="none" viewBox="0 0 24 24">
+                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                    <span class="text-blue-600">계산 중...</span>
+                </div>
+            </div>
+        </div>
+    </form>
+
+    <!-- 계산 결과 표시 영역 -->
+    <div id="calculationResult" class="hidden">
+        <!-- HTMX로 결과가 로드됩니다 -->
+    </div>
+
+    <!-- 다음 단계 진행 섹션 -->
+    <div id="next-step-compensation" class="hidden bg-gradient-to-r from-blue-50 to-indigo-50 border-2 border-blue-200 rounded-lg p-6 mb-6">
+        <div class="text-center">
+            <h3 class="text-lg font-semibold text-blue-800 mb-2">💡 보상금 계산 완료!</h3>
+            <p class="text-blue-700 mb-4">계산된 보상금을 바탕으로 전문가의 도움을 받아보세요.</p>
+            <div class="flex justify-center">
+                <button onclick="goToLawyerFromCompensation()"
+                        class="px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg shadow-lg transition-all duration-200 flex items-center justify-center">
+                    <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path>
+                    </svg>
+                    노무사 상담받기
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 계산 공식 안내 -->
+    <div class="bg-gray-50 rounded-lg p-6">
+        <h3 class="text-lg font-semibold text-gray-900 mb-4">계산 공식 안내</h3>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 text-sm">
+            <div>
+                <h4 class="font-medium text-gray-900 mb-2">통상임금 계산</h4>
+                <ul class="space-y-1 text-gray-600">
+                    <li>• 시간급 = 월 통상임금 ÷ 월 소정근로시간</li>
+                    <li>• 일급 = 시간급 × 8시간</li>
+                    <li>• 월 소정근로시간은 토요일 처리 방식에 따라 결정</li>
+                </ul>
+            </div>
+            <div>
+                <h4 class="font-medium text-gray-900 mb-2">주요 보상금</h4>
+                <ul class="space-y-1 text-gray-600">
+                    <li>• <strong>휴업급여:</strong> 평균임금의 70%</li>
+                    <li>• <strong>상병보상연금:</strong> 제1급 기준 329일</li>
+                    <li>• <strong>장해급여:</strong> 최저/최고 보상기준 적용</li>
+                    <li>• <strong>유족급여:</strong> 기본 47% + 가산</li>
+                    <li>• <strong>장례비:</strong> 평균임금 × 120일</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="mt-4 p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
+            <p class="text-sm text-yellow-800">
+                <strong>주의사항:</strong> 계산 결과는 참고용이며, 실제 지급액은 개별 상황과 심사 결과에 따라 달라질 수 있습니다.
+                정확한 계산을 위해서는 전문가 상담을 받으시기 바랍니다.
+            </p>
+        </div>
+    </div>
+</div>
+
+<script>
+// 통상임금 계산 방법 변경 처리
+function toggleWageMethod() {
+    const wageMethod = document.querySelector('input[name="wage_method"]:checked').value;
+    const wageAmountSection = document.getElementById('wageAmountSection');
+    const saturdaySection = document.getElementById('saturdaySection');
+    const wageAmountLabel = document.getElementById('wageAmountLabel');
+    const wageAmountHelp = document.getElementById('wageAmountHelp');
+    const wageAmountInput = document.getElementById('wageAmount');
+
+    if (wageMethod === 'skip') {
+        wageAmountSection.style.display = 'none';
+        saturdaySection.style.display = 'none';
+        wageAmountInput.value = 0;
+        wageAmountInput.required = false;
+    } else {
+        wageAmountSection.style.display = 'block';
+        wageAmountInput.required = true;
+
+        if (wageMethod === 'direct') {
+            wageAmountLabel.textContent = '일급 통상임금 (원)';
+            wageAmountHelp.textContent = '직접 계산한 일급 통상임금을 입력하세요';
+            wageAmountInput.placeholder = '예: 150000';
+            saturdaySection.style.display = 'none';
+        } else {
+            wageAmountLabel.textContent = '월 통상임금 (원)';
+            wageAmountHelp.textContent = '월 통상임금을 입력하세요';
+            wageAmountInput.placeholder = '예: 3500000';
+            saturdaySection.style.display = 'block';
+        }
+    }
+}
+
+// 숫자 천단위 콤마 추가 (개선된 버전)
+function formatCurrency(input) {
+    // 숫자가 아닌 문자 제거 (콤마 포함)
+    let value = input.value.replace(/[^0-9]/g, '');
+
+    // 빈 값이면 그대로 반환
+    if (!value) {
+        input.value = '';
+        return;
+    }
+
+    // 숫자를 천단위 콤마로 포맷팅
+    const numberValue = parseInt(value);
+    const formattedValue = numberValue.toLocaleString('ko-KR');
+
+    input.value = formattedValue;
+}
+
+// 폼 제출 전 검증 및 숫자 형식 정리
+document.getElementById('calculatorForm').addEventListener('submit', function(e) {
+    const wageAmountInput = document.getElementById('wageAmount');
+    const wageMethod = document.querySelector('input[name="wage_method"]:checked').value;
+
+    // 통상임금 입력이 필요한 경우 검증
+    if (wageMethod !== 'skip') {
+        if (!wageAmountInput.value || wageAmountInput.value.trim() === '') {
+            e.preventDefault();
+            alert('통상임금을 입력해주세요.');
+            wageAmountInput.focus();
+            return false;
+        }
+
+        // 콤마 제거 후 숫자 검증
+        const cleanValue = wageAmountInput.value.replace(/,/g, '');
+        const numericValue = parseInt(cleanValue);
+
+        if (isNaN(numericValue) || numericValue <= 0) {
+            e.preventDefault();
+            alert('유효한 금액을 입력해주세요.');
+            wageAmountInput.focus();
+            return false;
+        }
+
+        if (numericValue > 10000000) {
+            e.preventDefault();
+            alert('입력 가능한 최대 금액은 10,000,000원입니다.');
+            wageAmountInput.focus();
+            return false;
+        }
+
+        // 콤마 제거된 값으로 설정
+        wageAmountInput.value = cleanValue;
+    }
+});
+
+// 장해등급 예측 결과 파라미터 처리
+function handlePredictionParameters() {
+    const urlParams = new URLSearchParams(window.location.search);
+    const disabilityGrade = urlParams.get('disability_grade');
+    const fromPrediction = urlParams.get('from_prediction');
+
+    if (fromPrediction === 'true' && disabilityGrade) {
+        console.log(`🎯 장해등급 예측 결과로부터 받은 등급: ${disabilityGrade}급`);
+
+        // 장해등급 선택박스 설정
+        const gradeSelect = document.querySelector('select[name="disability_grade"]');
+        if (gradeSelect) {
+            gradeSelect.value = `${disabilityGrade}급`;
+            console.log(`✅ 장해등급 ${disabilityGrade}급 자동 설정 완료`);
+
+            // 시각적 강조 효과
+            gradeSelect.classList.add('ring-2', 'ring-green-400', 'bg-green-50');
+            setTimeout(() => {
+                gradeSelect.classList.remove('ring-2', 'ring-green-400', 'bg-green-50');
+            }, 2000);
+
+            // 사용자에게 알림 표시
+            showToast(`장해등급 예측 결과 ${disabilityGrade}급이 자동으로 설정되었습니다.`, 'success');
+        }
+
+        // 예측 출처 표시
+        const predictionInfo = document.createElement('div');
+        predictionInfo.className = 'bg-green-50 border-l-4 border-green-400 p-4 mb-6';
+        predictionInfo.innerHTML = `
+            <div class="flex">
+                <div class="flex-shrink-0">
+                    <svg class="h-5 w-5 text-green-400" viewBox="0 0 20 20" fill="currentColor">
+                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
+                    </svg>
+                </div>
+                <div class="ml-3">
+                    <p class="text-sm text-green-800">
+                        <strong>AI 예측 결과 연동:</strong> 장해등급 ${disabilityGrade}급 예측 결과가 자동으로 적용되었습니다.
+                    </p>
+                </div>
+            </div>
+        `;
+
+        // 페이지 헤더 아래에 정보 삽입
+        const headerSection = document.querySelector('.container .mb-8');
+        if (headerSection) {
+            headerSection.parentNode.insertBefore(predictionInfo, headerSection.nextSibling);
+        }
+    }
+}
+
+// 페이지 로드 시 초기화
+document.addEventListener('DOMContentLoaded', function() {
+    // 오늘 날짜로 계산 기준일 설정
+    const today = new Date();
+    const dateString = today.getFullYear() + '-' +
+                      String(today.getMonth() + 1).padStart(2, '0') + '-' +
+                      String(today.getDate()).padStart(2, '0');
+    document.getElementById('calculationDate').value = dateString;
+
+    // 통상임금 방법 초기화
+    toggleWageMethod();
+
+    // 장해등급 예측 결과 파라미터 처리
+    handlePredictionParameters();
+});
+
+// HTMX 응답 처리
+document.body.addEventListener('htmx:afterRequest', function(evt) {
+    if (evt.detail.target.id === 'calculationResult') {
+        if (evt.detail.xhr.status === 200) {
+            document.getElementById('calculationResult').classList.remove('hidden');
+            // 다음 단계 섹션 표시
+            showCompensationNextStep();
+            // 결과 영역으로 스크롤
+            document.getElementById('calculationResult').scrollIntoView({
+                behavior: 'smooth',
+                block: 'start'
+            });
+        } else {
+            // 에러 처리
+            try {
+                const errorData = JSON.parse(evt.detail.xhr.responseText);
+                showToast(errorData.error || '계산 중 오류가 발생했습니다.', 'error');
+            } catch {
+                showToast('계산 중 오류가 발생했습니다.', 'error');
+            }
+        }
+    }
+});
+
+// 플로우 네비게이션 함수들
+function goToLawyerFromCompensation() {
+    console.log('🔄 다음 단계로 이동: 노무사 상담');
+    window.location.href = '/lawyers';
+}
+
+function goToPrecedentAnalysis() {
+    console.log('🔄 이동: 판례 분석');
+    window.location.href = '/analysis/precedent';
+}
+
+function showCompensationNextStep() {
+    const nextStepSection = document.getElementById('next-step-compensation');
+    if (nextStepSection) {
+        nextStepSection.classList.remove('hidden');
+        console.log('✅ 다음 단계 섹션 표시 (보상금 계산 완료)');
+    }
+}
+
+// 토스트 메시지 표시 함수
+function showToast(message, type = 'info') {
+    // 기존 토스트 제거
+    const existingToast = document.getElementById('toast-notification');
+    if (existingToast) {
+        existingToast.remove();
+    }
+
+    // 토스트 색상 설정
+    const colorClasses = {
+        'success': 'bg-green-100 border-green-400 text-green-700',
+        'error': 'bg-red-100 border-red-400 text-red-700',
+        'info': 'bg-blue-100 border-blue-400 text-blue-700',
+        'warning': 'bg-yellow-100 border-yellow-400 text-yellow-700'
+    };
+
+    // 토스트 생성
+    const toast = document.createElement('div');
+    toast.id = 'toast-notification';
+    toast.className = `fixed top-4 right-4 z-50 border border-l-4 p-4 rounded shadow-lg ${colorClasses[type] || colorClasses.info}`;
+    toast.innerHTML = `
+        <div class="flex items-center justify-between">
+            <span class="text-sm font-medium">${message}</span>
+            <button onclick="this.parentElement.parentElement.remove()" class="ml-4 text-lg leading-none">&times;</button>
+        </div>
+    `;
+
+    // 페이지에 추가
+    document.body.appendChild(toast);
+
+    // 자동 제거 (3초 후)
+    setTimeout(() => {
+        if (toast && toast.parentNode) {
+            toast.remove();
+        }
+    }, 3000);
+}
+</script>
+
+<style>
+/* 폼 스타일링 */
+.form-input, .form-select {
+    @apply border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500;
+}
+
+.form-radio, .form-checkbox {
+    @apply text-blue-600 focus:ring-blue-500;
+}
+
+/* 로딩 애니메이션 */
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+.animate-spin {
+    animation: spin 1s linear infinite;
+}
+
+/* 반응형 디자인 */
+@media (max-width: 768px) {
+    .container {
+        padding-left: 1rem;
+        padding-right: 1rem;
+    }
+
+    .grid-cols-1 {
+        grid-template-columns: 1fr;
+    }
+
+    .md\:grid-cols-2 {
+        grid-template-columns: 1fr;
+    }
+}
+</style>
+{% endblock %}

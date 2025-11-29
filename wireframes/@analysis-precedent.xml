@@ -1,0 +1,310 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- 판례 분석 페이지 -->
+<page name="analysis-precedent" title="판례 분석 - SANZERO">
+  <layout type="main">
+    <!-- 페이지 헤더 -->
+    <section class="page-header">
+      <container class="max-w-4xl mx-auto px-4 py-8">
+        <breadcrumb>
+          <link href="/">홈</link>
+          <link href="/analysis">AI 분석</link>
+          <current>판례 분석</current>
+        </breadcrumb>
+
+        <heading level="1" class="text-3xl font-bold text-gray-900 mb-2">
+          AI 판례 분석
+        </heading>
+        <text class="text-gray-600">
+          유사한 산업재해 사례를 분석하여 승소 가능성과 예상 보상금을 예측합니다
+        </text>
+      </container>
+    </section>
+
+    <container class="max-w-4xl mx-auto px-4">
+      <grid class="grid-cols-1 lg:grid-cols-2 gap-8">
+        <!-- 분석 요청 폼 -->
+        <card>
+          <header class="mb-6">
+            <title class="text-lg font-semibold flex items-center">
+              <icon name="gavel" class="mr-2 text-blue-600" />
+              사고 정보 입력
+            </title>
+            <description>정확한 판례 분석을 위해 사고 정보를 입력해주세요</description>
+          </header>
+
+          <form id="precedent-analysis-form">
+            <form-section>
+              <field>
+                <label required="true">사고 발생일</label>
+                <input name="incident_date" type="date" required />
+              </field>
+
+              <field>
+                <label required="true">업종</label>
+                <select name="industry" required>
+                  <option value="">선택하세요</option>
+                  <option value="construction">건설업</option>
+                  <option value="manufacturing">제조업</option>
+                  <option value="chemical">화학물질 제조업</option>
+                  <option value="it">정보통신업</option>
+                  <option value="service">서비스업</option>
+                  <option value="other">기타</option>
+                </select>
+              </field>
+
+              <field>
+                <label required="true">부상 유형</label>
+                <select name="injury_type" required>
+                  <option value="">선택하세요</option>
+                  <option value="fracture">골절</option>
+                  <option value="sprain">염좌/타박상</option>
+                  <option value="cut">절단/열상</option>
+                  <option value="burn">화상</option>
+                  <option value="poisoning">중독</option>
+                  <option value="other">기타</option>
+                </select>
+              </field>
+
+              <field>
+                <label required="true">심각도</label>
+                <radio-group name="severity" required>
+                  <radio value="minor">경상 (외래 치료)</radio>
+                  <radio value="moderate">중상 (입원 치료)</radio>
+                  <radio value="severe">중상 (수술 필요)</radio>
+                  <radio value="critical">위중 (생명 위험)</radio>
+                </radio-group>
+              </field>
+
+              <field>
+                <label required="true">사고 경위</label>
+                <textarea name="incident_description" rows="4"
+                          placeholder="사고가 어떻게 발생했는지 구체적으로 설명해주세요..." required></textarea>
+              </field>
+
+              <field>
+                <label>월 평균 급여</label>
+                <input name="monthly_salary" type="number" placeholder="4000000" />
+                <help-text>원 단위로 입력하세요 (보상금 예측에 사용)</help-text>
+              </field>
+
+              <button type="submit" class="primary w-full">
+                판례 분석 시작하기
+              </button>
+            </form-section>
+          </form>
+        </card>
+
+        <!-- 분석 결과 -->
+        <card id="analysis-result" style="display: none;">
+          <header class="mb-6">
+            <title class="text-lg font-semibold flex items-center">
+              <icon name="chart-bar" class="mr-2 text-green-600" />
+              분석 결과
+            </title>
+          </header>
+
+          <!-- 종합 결과 -->
+          <result-summary class="mb-6 p-6 bg-blue-50 rounded-lg border-l-4 border-blue-600">
+            <div class="flex justify-between items-start mb-4">
+              <div>
+                <label class="text-blue-700 text-sm font-medium">승소 가능성</label>
+                <percentage class="text-3xl font-bold text-blue-900" id="success-probability">
+                  85%
+                </percentage>
+              </div>
+              <div class="text-right">
+                <label class="text-blue-700 text-sm font-medium">예상 보상금</label>
+                <amount class="text-2xl font-bold text-blue-900" id="expected-compensation">
+                  12,500,000원
+                </amount>
+              </div>
+            </div>
+            <confidence class="text-sm text-blue-600">
+              신뢰도: 92% (152개 유사 사례 기반)
+            </confidence>
+          </result-summary>
+
+          <!-- 유사 판례 분석 -->
+          <similar-cases class="mb-6">
+            <title class="font-semibold mb-4">유사 판례 분석</title>
+
+            <case-item class="border rounded-lg p-4 mb-3">
+              <header class="flex justify-between items-start mb-2">
+                <case-title class="font-medium">대법원 2023가단123456</case-title>
+                <similarity-score class="text-sm bg-green-100 text-green-800 px-2 py-1 rounded">
+                  유사도 94%
+                </similarity-score>
+              </header>
+              <case-summary class="text-sm text-gray-600 mb-2">
+                제조업 작업자, 기계 조작 중 손가락 절단 → 승소, 보상금 15,000,000원
+              </case-summary>
+              <case-factors class="flex flex-wrap gap-2">
+                <factor class="text-xs bg-gray-100 text-gray-700 px-2 py-1 rounded">업종 일치</factor>
+                <factor class="text-xs bg-gray-100 text-gray-700 px-2 py-1 rounded">부상 유형 일치</factor>
+                <factor class="text-xs bg-gray-100 text-gray-700 px-2 py-1 rounded">심각도 유사</factor>
+              </case-factors>
+            </case-item>
+
+            <case-item class="border rounded-lg p-4 mb-3">
+              <header class="flex justify-between items-start mb-2">
+                <case-title class="font-medium">서울고법 2023나654321</case-title>
+                <similarity-score class="text-sm bg-green-100 text-green-800 px-2 py-1 rounded">
+                  유사도 87%
+                </similarity-score>
+              </header>
+              <case-summary class="text-sm text-gray-600 mb-2">
+                제조업 작업자, 안전장비 미착용으로 인한 사고 → 승소, 보상금 8,500,000원
+              </case-summary>
+              <case-factors class="flex flex-wrap gap-2">
+                <factor class="text-xs bg-gray-100 text-gray-700 px-2 py-1 rounded">업종 일치</factor>
+                <factor class="text-xs bg-gray-100 text-gray-700 px-2 py-1 rounded">과실 비율 고려</factor>
+              </case-factors>
+            </case-item>
+
+            <case-item class="border rounded-lg p-4">
+              <header class="flex justify-between items-start mb-2">
+                <case-title class="font-medium">수원지법 2023가합789012</case-title>
+                <similarity-score class="text-sm bg-yellow-100 text-yellow-800 px-2 py-1 rounded">
+                  유사도 76%
+                </similarity-score>
+              </header>
+              <case-summary class="text-sm text-gray-600 mb-2">
+                제조업 작업자, 작업장 안전 미흡으로 인한 사고 → 패소
+              </case-summary>
+              <case-factors class="flex flex-wrap gap-2">
+                <factor class="text-xs bg-gray-100 text-gray-700 px-2 py-1 rounded">업종 일치</factor>
+                <factor class="text-xs bg-red-100 text-red-700 px-2 py-1 rounded">안전 의무 위반</factor>
+              </case-factors>
+            </case-item>
+          </similar-cases>
+
+          <!-- AI 분석 인사이트 -->
+          <ai-insights class="mb-6 p-4 bg-purple-50 rounded-lg">
+            <title class="font-medium text-purple-900 mb-3">AI 분석 인사이트</title>
+
+            <insight-list class="space-y-3">
+              <insight-item class="flex items-start">
+                <icon name="check-circle" class="text-green-500 mt-1 mr-3" />
+                <content>
+                  <title class="font-medium text-green-900">긍정적 요인</title>
+                  <description class="text-sm text-green-700">
+                    업종별 안전 규정 위반이 명확하고, 유사 사례에서 높은 승소율을 보임
+                  </description>
+                </content>
+              </insight-item>
+
+              <insight-item class="flex items-start">
+                <icon name="alert-circle" class="text-yellow-500 mt-1 mr-3" />
+                <content>
+                  <title class="font-medium text-yellow-900">주의 요인</title>
+                  <description class="text-sm text-yellow-700">
+                    피해자의 안전수칙 준수 여부가 과실 비율에 영향을 줄 수 있음
+                  </description>
+                </content>
+              </insight-item>
+
+              <insight-item class="flex items-start">
+                <icon name="lightbulb" class="text-blue-500 mt-1 mr-3" />
+                <content>
+                  <title class="font-medium text-blue-900">추천 사항</title>
+                  <description class="text-sm text-blue-700">
+                    안전교육 이수 기록과 작업 매뉴얼 준수 증빙 자료 확보 권장
+                  </description>
+                </content>
+              </insight-item>
+            </insight-list>
+          </ai-insights>
+
+          <!-- 다음 단계 안내 -->
+          <next-steps>
+            <title class="font-semibold mb-4">다음 단계</title>
+
+            <step-list class="space-y-3">
+              <step-item class="flex items-center justify-between p-3 border rounded-lg">
+                <step-content class="flex items-center">
+                  <icon name="document" class="text-blue-600 mr-3" />
+                  <div>
+                    <title class="font-medium">보상금 신청서 작성</title>
+                    <description class="text-sm text-gray-600">분석 결과를 바탕으로 신청서를 작성하세요</description>
+                  </div>
+                </step-content>
+                <button href="/compensation/apply" class="primary-outline">신청하기</button>
+              </step-item>
+
+              <step-item class="flex items-center justify-between p-3 border rounded-lg">
+                <step-content class="flex items-center">
+                  <icon name="users" class="text-green-600 mr-3" />
+                  <div>
+                    <title class="font-medium">전문 노무사 상담</title>
+                    <description class="text-sm text-gray-600">법적 조언과 소송 전략을 상담받으세요</description>
+                  </div>
+                </step-content>
+                <button href="/lawyers" class="secondary">상담 예약</button>
+              </step-item>
+
+              <step-item class="flex items-center justify-between p-3 border rounded-lg">
+                <step-content class="flex items-center">
+                  <icon name="download" class="text-purple-600 mr-3" />
+                  <div>
+                    <title class="font-medium">분석 결과 다운로드</title>
+                    <description class="text-sm text-gray-600">PDF 보고서로 저장하여 활용하세요</description>
+                  </div>
+                </step-content>
+                <button class="secondary">다운로드</button>
+              </step-item>
+            </step-list>
+          </next-steps>
+        </card>
+
+        <!-- 분석 가이드 (결과 전 표시) -->
+        <card id="analysis-guide">
+          <header class="mb-6">
+            <title class="text-lg font-semibold">판례 분석 가이드</title>
+          </header>
+
+          <guide-content class="space-y-4">
+            <guide-section>
+              <title class="font-medium mb-2">분석 기준</title>
+              <list class="text-sm text-gray-600 space-y-1">
+                <item>• 업종별 산업재해 판례 10,000건+ 분석</item>
+                <item>• 부상 유형, 심각도, 과실 비율 종합 검토</item>
+                <item>• 최근 5년간 판례 동향 반영</item>
+                <item>• 지역별 법원 판결 성향 고려</item>
+              </list>
+            </guide-section>
+
+            <guide-section>
+              <title class="font-medium mb-2">승소 가능성 지표</title>
+              <progress-indicators class="space-y-2">
+                <indicator class="flex justify-between">
+                  <label>90% 이상</label>
+                  <status class="text-green-600 font-medium">매우 높음</status>
+                </indicator>
+                <indicator class="flex justify-between">
+                  <label>70-89%</label>
+                  <status class="text-blue-600 font-medium">높음</status>
+                </indicator>
+                <indicator class="flex justify-between">
+                  <label>50-69%</label>
+                  <status class="text-yellow-600 font-medium">보통</status>
+                </indicator>
+                <indicator class="flex justify-between">
+                  <label>50% 미만</label>
+                  <status class="text-red-600 font-medium">낮음</status>
+                </indicator>
+              </progress-indicators>
+            </guide-section>
+
+            <disclaimer class="p-3 bg-yellow-50 border border-yellow-200 rounded">
+              <title class="font-medium text-yellow-800">주의사항</title>
+              <text class="text-sm text-yellow-700">
+                AI 분석 결과는 참고 자료로만 활용하시기 바라며,
+                정확한 법적 판단은 전문 노무사와 상담을 받으시기를 권장합니다.
+              </text>
+            </disclaimer>
+          </guide-content>
+        </card>
+      </grid>
+    </container>
+  </layout>
+</page>

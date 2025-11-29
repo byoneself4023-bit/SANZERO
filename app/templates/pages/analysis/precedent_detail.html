@@ -1,0 +1,196 @@
+{% extends "base.html" %}
+
+{% block title %}{{ precedent.get('summarized_title', 'Unknown Case') }} - SANZERO{% endblock %}
+
+{% block content %}
+<div class="container mx-auto px-4 py-8">
+    <!-- 페이지 헤더 -->
+    <div class="mb-8">
+        <div class="flex items-center mb-4">
+            <a href="/analysis/precedent" class="text-gray-500 hover:text-gray-700 mr-4">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
+                </svg>
+            </a>
+            <div class="flex-1">
+                <h1 class="text-3xl font-bold text-gray-900 mb-2">{{ precedent.get('title', 'Unknown Title') }}</h1>
+                <div class="flex items-center space-x-4 text-sm text-gray-600">
+                    <span><strong>법원:</strong> {{ precedent.get('court', 'Unknown Court') }}</span>
+                    <span><strong>날짜:</strong> {{ precedent.get('date', 'Unknown Date') }}</span>
+                    <span><strong>Case ID:</strong> {{ precedent.get('case_id', 'Unknown ID') }}</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="grid lg:grid-cols-4 gap-8">
+        <!-- 메인 판례 내용 -->
+        <div class="lg:col-span-3">
+            <!-- 기본 정보 카드 -->
+            <div class="bg-white rounded-lg shadow-lg p-6 mb-6">
+                <h2 class="text-xl font-bold text-gray-900 mb-4">📋 기본 정보</h2>
+
+                <div class="grid md:grid-cols-2 gap-4 mb-4">
+                    <div class="space-y-3">
+                        <div>
+                            <span class="font-medium text-gray-700">사건번호:</span>
+                            <span class="text-gray-900">{{ precedent.get('case_number', '사건번호 미상') }}</span>
+                        </div>
+                        <div>
+                            <span class="font-medium text-gray-700">원고:</span>
+                            <span class="text-gray-900">{{ precedent.get('plaintiff', '원고 정보 미상') }}</span>
+                        </div>
+                        <div>
+                            <span class="font-medium text-gray-700">피고:</span>
+                            <span class="text-gray-900">{{ precedent.get('defendant', '피고 정보 미상') }}</span>
+                        </div>
+                    </div>
+                    <div class="space-y-3">
+                        <div>
+                            <span class="font-medium text-gray-700">사고 유형:</span>
+                            <span class="inline-block bg-blue-100 text-blue-800 px-2 py-1 rounded text-sm">
+                                {% if precedent.get('category') == '추락사고' %}🪜
+                                {% elif precedent.get('category') == '기계사고' %}⚙️
+                                {% elif precedent.get('category') == '화재사고' %}🔥
+                                {% elif precedent.get('category') == '교통사고' %}🚗
+                                {% elif precedent.get('category') == '중독사고' %}☣️
+                                {% elif precedent.get('category') == '감전사고' %}⚡
+                                {% else %}⚡{% endif %} {{ precedent.get('category', '기타 사고') }}
+                            </span>
+                        </div>
+                        <div>
+                            <span class="font-medium text-gray-700">내용 길이:</span>
+                            <span class="text-gray-900">{{ "{:,}".format(precedent.get('content_length', 0)) }} 자</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 키워드 태그 -->
+                {% if precedent.get('keywords') %}
+                <div class="mb-4">
+                    <span class="font-medium text-gray-700 block mb-2">주요 키워드:</span>
+                    <div class="flex flex-wrap gap-2">
+                        {% for keyword in precedent.get('keywords', []) %}
+                        <span class="inline-block bg-green-100 text-green-800 px-2 py-1 rounded-full text-xs">
+                            {{ keyword }}
+                        </span>
+                        {% endfor %}
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+
+            <!-- 판례 전문 내용 -->
+            <div class="bg-white rounded-lg shadow-lg p-6">
+                <h2 class="text-xl font-bold text-gray-900 mb-4">📄 판례 전문</h2>
+
+                <div class="prose max-w-none">
+                    <div class="precedent-full-content text-gray-700 leading-relaxed whitespace-pre-line break-words">
+                        {{ precedent.get('full_content', '판례 내용을 불러올 수 없습니다.') }}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 사이드바 -->
+        <div class="lg:col-span-1">
+
+            <!-- 판례 통계 -->
+            <div class="bg-gray-50 border border-gray-200 rounded-lg p-6">
+                <h3 class="text-lg font-semibold text-gray-800 mb-3">📊 판례 정보</h3>
+                <div class="space-y-2 text-sm">
+                    <div class="flex justify-between">
+                        <span class="text-gray-600">데이터 인덱스:</span>
+                        <span class="text-gray-900 font-medium">{{ precedent.get('index', 'N/A') }}</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="text-gray-600">텍스트 길이:</span>
+                        <span class="text-gray-900 font-medium">{{ "{:,}".format(precedent.get('content_length', 0)) }}자</span>
+                    </div>
+                    {% if precedent.get('keywords') %}
+                    <div class="flex justify-between">
+                        <span class="text-gray-600">키워드 수:</span>
+                        <span class="text-gray-900 font-medium">{{ precedent.get('keywords', [])|length }}개</span>
+                    </div>
+                    {% endif %}
+                </div>
+
+                <div class="mt-4 pt-4 border-t border-gray-300">
+                    <div class="text-xs text-gray-500">
+                        <p>이 판례는 SANZERO AI 시스템에서</p>
+                        <p>자동으로 분류 및 분석되었습니다.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// ============================================================================
+// 🚀 Precedent Detail JavaScript Functions
+// ============================================================================
+
+
+function consultLawyer() {
+    // 노무사 상담 페이지로 이동
+    window.location.href = '/lawyers';
+}
+
+function calculateCompensation() {
+    // 보상금 계산 페이지로 이동
+    window.location.href = '/compensation/calculate';
+}
+
+// 페이지 로드 완료 시
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('📄 Precedent detail page loaded:', '{{ precedent.get("case_id", "unknown") }}');
+
+    // 긴 텍스트의 가독성을 위한 동적 조정
+    const content = document.querySelector('.precedent-full-content');
+    if (content && content.textContent.length > 5000) {
+        content.style.fontSize = '0.9rem';
+        content.style.lineHeight = '1.7';
+    }
+
+});
+</script>
+
+<style>
+/* 판례 상세 페이지 전용 스타일 */
+.precedent-full-content {
+    font-family: 'Noto Sans KR', system-ui, -apple-system, sans-serif;
+    line-height: 1.8;
+    word-spacing: 0.1em;
+    letter-spacing: 0.03em;
+    text-align: justify;
+    text-justify: inter-word;
+}
+
+.prose {
+    max-width: none;
+}
+
+/* 반응형 조정 */
+@media (max-width: 768px) {
+    .precedent-full-content {
+        font-size: 0.875rem;
+        line-height: 1.6;
+    }
+}
+
+/* 인쇄 스타일 */
+@media print {
+    .precedent-full-content {
+        font-size: 12pt;
+        line-height: 1.6;
+        color: black;
+    }
+
+    .bg-blue-50, .bg-gray-50 {
+        background-color: #f8f9fa !important;
+    }
+}
+</style>
+
+{% endblock %}

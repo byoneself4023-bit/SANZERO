@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- 공통 푸터 컴포넌트 -->
+<component name="footer" title="SANZERO 공통 푸터">
+  <footer class="bg-gray-900 text-white">
+    <container class="max-w-7xl mx-auto px-4 py-12">
+      <!-- 메인 푸터 내용 -->
+      <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
+        <!-- 브랜드 섹션 -->
+        <div class="col-span-1 md:col-span-2">
+          <div class="flex items-center space-x-2 mb-4">
+            <icon name="shield-check" class="w-8 h-8 text-primary-400" />
+            <text class="text-xl font-bold">SANZERO</text>
+          </div>
+          <text class="text-gray-300 leading-relaxed">
+            AI 기반 산업재해 보상 서비스 플랫폼으로,
+            더 정확하고 빠른 보상금 산정과 전문 노무사 상담을 제공합니다.
+          </text>
+          <div class="mt-4 flex space-x-4">
+            <link href="mailto:support@sanzero.co.kr" class="text-gray-400 hover:text-white">
+              <icon name="mail" class="w-5 h-5" />
+            </link>
+            <link href="tel:1588-0000" class="text-gray-400 hover:text-white">
+              <icon name="phone" class="w-5 h-5" />
+            </link>
+          </div>
+        </div>
+
+        <!-- 서비스 링크 -->
+        <div>
+          <title class="font-semibold text-lg mb-4">서비스</title>
+          <nav class="space-y-2">
+            <link href="/compensation" class="block text-gray-400 hover:text-white">
+              보상금 관리
+            </link>
+            <link href="/analysis" class="block text-gray-400 hover:text-white">
+              AI 분석
+            </link>
+            <link href="/lawyers" class="block text-gray-400 hover:text-white">
+              노무사 서비스
+            </link>
+            <link href="/chat" class="block text-gray-400 hover:text-white">
+              AI 챗봇
+            </link>
+          </nav>
+        </div>
+
+        <!-- 고객지원 -->
+        <div>
+          <title class="font-semibold text-lg mb-4">고객지원</title>
+          <nav class="space-y-2">
+            <link href="/help" class="block text-gray-400 hover:text-white">
+              도움말
+            </link>
+            <link href="/faq" class="block text-gray-400 hover:text-white">
+              자주 묻는 질문
+            </link>
+            <link href="/contact" class="block text-gray-400 hover:text-white">
+              문의하기
+            </link>
+            <link href="/terms" class="block text-gray-400 hover:text-white">
+              이용약관
+            </link>
+            <link href="/privacy" class="block text-gray-400 hover:text-white">
+              개인정보처리방침
+            </link>
+          </nav>
+        </div>
+      </div>
+
+      <!-- 하단 섹션 -->
+      <div class="border-t border-gray-800 mt-8 pt-8 flex flex-col md:flex-row justify-between items-center">
+        <text class="text-gray-400 text-sm">
+          © 2024 SANZERO. All rights reserved.
+        </text>
+        <div class="flex space-x-6 mt-4 md:mt-0">
+          <text class="text-gray-400 text-sm">
+            사업자등록번호: 123-45-67890
+          </text>
+          <text class="text-gray-400 text-sm">
+            대표: 홍길동
+          </text>
+          <text class="text-gray-400 text-sm">
+            고객센터: 1588-0000
+          </text>
+        </div>
+      </div>
+    </container>
+  </footer>
+</component>

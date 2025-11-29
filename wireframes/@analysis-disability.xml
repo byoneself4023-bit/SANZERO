@@ -1,0 +1,351 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- 장애 등급 예측 페이지 -->
+<page name="analysis-disability" title="장애 등급 예측 - SANZERO">
+  <layout type="main">
+    <!-- 페이지 헤더 -->
+    <section class="page-header">
+      <container class="max-w-4xl mx-auto px-4 py-8">
+        <breadcrumb>
+          <link href="/">홈</link>
+          <link href="/analysis">AI 분석</link>
+          <current>장애 등급 예측</current>
+        </breadcrumb>
+
+        <heading level="1" class="text-3xl font-bold text-gray-900 mb-2">
+          AI 장애 등급 예측
+        </heading>
+        <text class="text-gray-600">
+          의료 기록을 분석하여 예상 장애 등급과 회복 가능성을 진단합니다
+        </text>
+      </container>
+    </section>
+
+    <container class="max-w-4xl mx-auto px-4">
+      <grid class="grid-cols-1 lg:grid-cols-2 gap-8">
+        <!-- 의료 정보 입력 폼 -->
+        <card>
+          <header class="mb-6">
+            <title class="text-lg font-semibold flex items-center">
+              <icon name="medical" class="mr-2 text-purple-600" />
+              의료 정보 입력
+            </title>
+            <description>정확한 장애 등급 예측을 위해 의료 정보를 입력해주세요</description>
+          </header>
+
+          <form id="disability-prediction-form">
+            <form-section>
+              <field>
+                <label required="true">부상 부위</label>
+                <checkbox-group name="injury_parts" required>
+                  <checkbox value="head">머리/뇌</checkbox>
+                  <checkbox value="eyes">눈</checkbox>
+                  <checkbox value="ears">귀</checkbox>
+                  <checkbox value="arms">팔/어깨</checkbox>
+                  <checkbox value="hands">손/손가락</checkbox>
+                  <checkbox value="spine">척추</checkbox>
+                  <checkbox value="legs">다리</checkbox>
+                  <checkbox value="internal">내부 장기</checkbox>
+                </checkbox-group>
+              </field>
+
+              <field>
+                <label required="true">부상 유형</label>
+                <select name="injury_type" required>
+                  <option value="">선택하세요</option>
+                  <option value="fracture">골절</option>
+                  <option value="amputation">절단</option>
+                  <option value="burn">화상</option>
+                  <option value="nerve_damage">신경 손상</option>
+                  <option value="organ_damage">장기 손상</option>
+                  <option value="spinal_injury">척추 손상</option>
+                  <option value="brain_injury">뇌손상</option>
+                  <option value="other">기타</option>
+                </select>
+              </field>
+
+              <field>
+                <label required="true">진단명</label>
+                <input name="diagnosis" type="text" placeholder="우측 손목 복합 골절" required />
+              </field>
+
+              <field>
+                <label required="true">수술 여부</label>
+                <radio-group name="surgery_status" required>
+                  <radio value="none">수술 없음</radio>
+                  <radio value="completed">수술 완료</radio>
+                  <radio value="planned">수술 예정</radio>
+                  <radio value="multiple">다회 수술</radio>
+                </radio-group>
+              </field>
+
+              <field>
+                <label>수술 내용 (해당 시)</label>
+                <textarea name="surgery_details" rows="3"
+                          placeholder="수술 방법, 임플란트 삽입 여부 등..."></textarea>
+              </field>
+
+              <field>
+                <label required="true">현재 증상</label>
+                <checkbox-group name="current_symptoms" required>
+                  <checkbox value="pain">지속적 통증</checkbox>
+                  <checkbox value="numbness">저림/무감각</checkbox>
+                  <checkbox value="weakness">근력 약화</checkbox>
+                  <checkbox value="limited_motion">관절 가동 제한</checkbox>
+                  <checkbox value="functional_loss">기능 상실</checkbox>
+                  <checkbox value="cognitive">인지 장애</checkbox>
+                  <checkbox value="sensory">감각 장애</checkbox>
+                </checkbox-group>
+              </field>
+
+              <field>
+                <label>기능 제한 정도</label>
+                <radio-group name="functional_limitation">
+                  <radio value="none">제한 없음</radio>
+                  <radio value="mild">경미한 제한</radio>
+                  <radio value="moderate">중등도 제한</radio>
+                  <radio value="severe">심각한 제한</radio>
+                  <radio value="total">완전 기능 상실</radio>
+                </radio-group>
+              </field>
+
+              <field>
+                <label>치료 기간</label>
+                <input name="treatment_duration" type="text" placeholder="12주" />
+              </field>
+
+              <field>
+                <label>재활 치료 여부</label>
+                <radio-group name="rehabilitation">
+                  <radio value="none">재활 없음</radio>
+                  <radio value="ongoing">재활 중</radio>
+                  <radio value="completed">재활 완료</radio>
+                  <radio value="planned">재활 예정</radio>
+                </radio-group>
+              </field>
+
+              <button type="submit" class="primary w-full">
+                장애 등급 예측하기
+              </button>
+            </form-section>
+          </form>
+        </card>
+
+        <!-- 예측 결과 -->
+        <card id="prediction-result" style="display: none;">
+          <header class="mb-6">
+            <title class="text-lg font-semibold flex items-center">
+              <icon name="activity" class="mr-2 text-green-600" />
+              예측 결과
+            </title>
+          </header>
+
+          <!-- 예상 장애 등급 -->
+          <grade-result class="mb-6 p-6 bg-purple-50 rounded-lg border-l-4 border-purple-600">
+            <div class="flex justify-between items-start mb-4">
+              <div>
+                <label class="text-purple-700 text-sm font-medium">예상 장애 등급</label>
+                <grade class="text-3xl font-bold text-purple-900" id="predicted-grade">
+                  6급
+                </grade>
+              </div>
+              <div class="text-right">
+                <label class="text-purple-700 text-sm font-medium">신뢰도</label>
+                <confidence class="text-2xl font-bold text-purple-900" id="confidence-score">
+                  87%
+                </confidence>
+              </div>
+            </div>
+            <description class="text-sm text-purple-600">
+              손목 관절 기능 장애 (일상생활 수행에 경미한 지장)
+            </description>
+          </grade-result>
+
+          <!-- 회복 예측 -->
+          <recovery-prediction class="mb-6">
+            <title class="font-semibold mb-4">회복 가능성 분석</title>
+
+            <recovery-timeline class="space-y-4">
+              <timeline-item class="flex items-center">
+                <progress-indicator class="w-4 h-4 bg-green-500 rounded-full mr-4"></progress-indicator>
+                <content>
+                  <timeframe class="font-medium">3개월 후</timeframe>
+                  <prediction class="text-sm text-gray-600">통증 70% 완화, 기본 움직임 회복</prediction>
+                </content>
+              </timeline-item>
+
+              <timeline-item class="flex items-center">
+                <progress-indicator class="w-4 h-4 bg-green-500 rounded-full mr-4"></progress-indicator>
+                <content>
+                  <timeframe class="font-medium">6개월 후</timeframe>
+                  <prediction class="text-sm text-gray-600">관절 가동 범위 80% 회복, 일상생활 가능</prediction>
+                </content>
+              </timeline-item>
+
+              <timeline-item class="flex items-center">
+                <progress-indicator class="w-4 h-4 bg-yellow-500 rounded-full mr-4"></progress-indicator>
+                <content>
+                  <timeframe class="font-medium">12개월 후</timeframe>
+                  <prediction class="text-sm text-gray-600">최대 회복 상태, 잔여 장애 등급 5-6급 예상</prediction>
+                </content>
+              </timeline-item>
+
+              <timeline-item class="flex items-center">
+                <progress-indicator class="w-4 h-4 bg-gray-400 rounded-full mr-4"></progress-indicator>
+                <content>
+                  <timeframe class="font-medium">장기적</timeframe>
+                  <prediction class="text-sm text-gray-600">완전 회복 가능성 30%, 지속적 관리 필요</prediction>
+                </content>
+              </timeline-item>
+            </recovery-timeline>
+          </recovery-prediction>
+
+          <!-- 등급별 설명 -->
+          <grade-explanation class="mb-6 p-4 bg-blue-50 rounded-lg">
+            <title class="font-medium text-blue-900 mb-3">6급 장애 등급 설명</title>
+
+            <criteria class="space-y-2 text-sm text-blue-700">
+              <criterion>• 한 손의 엄지손가락 또는 엄지손가락을 제외한 손가락 중 둘째 손가락을 잃은 사람</criterion>
+              <criterion>• 한 손의 엄지손가락 또는 엄지손가락을 제외한 손가락 중 둘째 손가락의 용도를 완전히 잃은 사람</criterion>
+              <criterion>• 한 다리를 3센티미터 이상 단축한 사람</criterion>
+              <criterion>• 한 발의 둘째 발가락을 잃은 사람</criterion>
+            </criteria>
+
+            <compensation-info class="mt-3 p-3 bg-blue-100 rounded">
+              <label class="font-medium text-blue-900">급여 기준</label>
+              <text class="text-sm text-blue-700">
+                평균임금의 101일분 일시금 또는 연금 선택 가능
+              </text>
+            </compensation-info>
+          </grade-explanation>
+
+          <!-- AI 분석 상세 -->
+          <ai-analysis class="mb-6 p-4 bg-gray-50 rounded-lg">
+            <title class="font-medium text-gray-900 mb-3">AI 분석 근거</title>
+
+            <analysis-factors class="space-y-3">
+              <factor-item class="flex items-start">
+                <icon name="check" class="text-green-500 mt-1 mr-3" />
+                <content>
+                  <title class="font-medium">부상 부위 분석</title>
+                  <description class="text-sm text-gray-600">
+                    손목 복합 골절 - 유사 사례 834건 중 6급 판정 비율 67%
+                  </description>
+                </content>
+              </factor-item>
+
+              <factor-item class="flex items-start">
+                <icon name="activity" class="text-blue-500 mt-1 mr-3" />
+                <content>
+                  <title class="font-medium">기능 평가</title>
+                  <description class="text-sm text-gray-600">
+                    관절 가동 제한 40%, 근력 감소 30% → 6급 기준 부합
+                  </description>
+                </content>
+              </factor-item>
+
+              <factor-item class="flex items-start">
+                <icon name="clock" class="text-purple-500 mt-1 mr-3" />
+                <content>
+                  <title class="font-medium">치료 경과</title>
+                  <description class="text-sm text-gray-600">
+                    수술 완료 후 12주 치료 → 일반적 회복 패턴과 일치
+                  </description>
+                </content>
+              </factor-item>
+            </analysis-factors>
+          </ai-analysis>
+
+          <!-- 추천 조치 -->
+          <recommendations>
+            <title class="font-semibold mb-4">추천 조치사항</title>
+
+            <recommendation-list class="space-y-3">
+              <recommendation-item class="flex items-center justify-between p-3 border rounded-lg">
+                <recommendation-content class="flex items-center">
+                  <icon name="stethoscope" class="text-red-600 mr-3" />
+                  <div>
+                    <title class="font-medium">추가 정밀 검사</title>
+                    <description class="text-sm text-gray-600">MRI 촬영으로 연골 손상 정도 확인</description>
+                  </div>
+                </recommendation-content>
+                <priority class="text-sm bg-red-100 text-red-800 px-2 py-1 rounded">필수</priority>
+              </recommendation-item>
+
+              <recommendation-item class="flex items-center justify-between p-3 border rounded-lg">
+                <recommendation-content class="flex items-center">
+                  <icon name="activity" class="text-blue-600 mr-3" />
+                  <div>
+                    <title class="font-medium">재활 치료 강화</title>
+                    <description class="text-sm text-gray-600">물리치료 주 3회, 운동치료 병행</description>
+                  </div>
+                </recommendation-content>
+                <priority class="text-sm bg-blue-100 text-blue-800 px-2 py-1 rounded">권장</priority>
+              </recommendation-item>
+
+              <recommendation-item class="flex items-center justify-between p-3 border rounded-lg">
+                <recommendation-content class="flex items-center">
+                  <icon name="calendar" class="text-green-600 mr-3" />
+                  <div>
+                    <title class="font-medium">정기 추적 관찰</title>
+                    <description class="text-sm text-gray-600">3개월마다 기능 평가 및 등급 재검토</description>
+                  </div>
+                </recommendation-content>
+                <priority class="text-sm bg-green-100 text-green-800 px-2 py-1 rounded">일반</priority>
+              </recommendation-item>
+            </recommendation-list>
+          </recommendations>
+        </card>
+
+        <!-- 예측 가이드 (결과 전 표시) -->
+        <card id="prediction-guide">
+          <header class="mb-6">
+            <title class="text-lg font-semibold">장애 등급 가이드</title>
+          </header>
+
+          <guide-content class="space-y-4">
+            <guide-section>
+              <title class="font-medium mb-2">장애 등급 기준</title>
+              <grade-levels class="text-sm space-y-2">
+                <grade-level class="flex justify-between">
+                  <label>1급</label>
+                  <description class="text-gray-600">완전 영구 장애</description>
+                </grade-level>
+                <grade-level class="flex justify-between">
+                  <label>2-3급</label>
+                  <description class="text-gray-600">중도 영구 장애</description>
+                </grade-level>
+                <grade-level class="flex justify-between">
+                  <label>4-7급</label>
+                  <description class="text-gray-600">경도 영구 장애</description>
+                </grade-level>
+                <grade-level class="flex justify-between">
+                  <label>8-14급</label>
+                  <description class="text-gray-600">부분 영구 장애</description>
+                </grade-level>
+              </grade-levels>
+            </guide-section>
+
+            <guide-section>
+              <title class="font-medium mb-2">평가 항목</title>
+              <evaluation-items class="text-sm text-gray-600 space-y-1">
+                <item>• 신체 부위별 기능 장애 정도</item>
+                <item>• 일상생활 수행 능력</item>
+                <item>• 직업 복귀 가능성</item>
+                <item>• 의학적 소견 및 검사 결과</item>
+                <item>• 치료 과정 및 회복 정도</item>
+              </evaluation-items>
+            </guide-section>
+
+            <disclaimer class="p-3 bg-yellow-50 border border-yellow-200 rounded">
+              <title class="font-medium text-yellow-800">주의사항</title>
+              <text class="text-sm text-yellow-700">
+                AI 예측 결과는 참고용이며, 정확한 장애 등급은 의료진의 진단과
+                국민연금공단의 심사를 통해 결정됩니다.
+              </text>
+            </disclaimer>
+          </guide-content>
+        </card>
+      </grid>
+    </container>
+  </layout>
+</page>

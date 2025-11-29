@@ -1,0 +1,300 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- 보상금 신청 페이지 -->
+<page name="compensation-apply" title="보상금 신청 - SANZERO">
+  <layout type="main">
+    <!-- 페이지 헤더 -->
+    <section class="page-header">
+      <container class="max-w-4xl mx-auto px-4 py-8">
+        <breadcrumb>
+          <link href="/">홈</link>
+          <link href="/compensation">보상금 관리</link>
+          <current>신청하기</current>
+        </breadcrumb>
+
+        <heading level="1" class="text-3xl font-bold text-gray-900 mb-2">
+          산업재해 보상금 신청
+        </heading>
+        <text class="text-gray-600">
+          정확한 정보를 입력하여 보상금 신청을 진행하세요
+        </text>
+      </container>
+    </section>
+
+    <!-- 신청 진행 단계 -->
+    <section class="progress-steps">
+      <container class="max-w-4xl mx-auto px-4">
+        <stepper class="mb-8">
+          <step class="active" number="1">기본 정보</step>
+          <step number="2">사고 내용</step>
+          <step number="3">의료 기록</step>
+          <step number="4">서류 업로드</step>
+          <step number="5">검토 및 제출</step>
+        </stepper>
+      </container>
+    </section>
+
+    <!-- 신청 폼 -->
+    <section class="application-form">
+      <container class="max-w-4xl mx-auto px-4">
+        <form action="/compensation/applications" method="POST" enctype="multipart/form-data">
+          <input type="hidden" name="csrf_token" value="{csrf_token}" />
+
+          <!-- 1단계: 기본 정보 -->
+          <card class="step-card active" data-step="1">
+            <header>
+              <title class="text-lg font-semibold">1. 기본 정보</title>
+              <description>신청자의 기본 정보를 입력해주세요</description>
+            </header>
+
+            <form-section>
+              <grid class="grid-cols-1 md:grid-cols-2 gap-6">
+                <field>
+                  <label required="true">신청자명</label>
+                  <input name="applicant_name" type="text" placeholder="홍길동" required />
+                </field>
+
+                <field>
+                  <label required="true">주민등록번호</label>
+                  <input name="ssn" type="text" placeholder="000000-0000000" required />
+                </field>
+
+                <field>
+                  <label required="true">연락처</label>
+                  <input name="phone" type="tel" placeholder="010-0000-0000" required />
+                </field>
+
+                <field>
+                  <label required="true">이메일</label>
+                  <input name="email" type="email" placeholder="your@example.com" required />
+                </field>
+              </grid>
+
+              <field class="full-width">
+                <label required="true">주소</label>
+                <input name="address" type="text" placeholder="서울시 강남구..." required />
+              </field>
+            </form-section>
+          </card>
+
+          <!-- 2단계: 사고 내용 -->
+          <card class="step-card" data-step="2">
+            <header>
+              <title class="text-lg font-semibold">2. 사고 내용</title>
+              <description>산업재해 발생 상황을 상세히 입력해주세요</description>
+            </header>
+
+            <form-section>
+              <grid class="grid-cols-1 md:grid-cols-2 gap-6">
+                <field>
+                  <label required="true">사고 발생일</label>
+                  <input name="incident_date" type="date" required />
+                </field>
+
+                <field>
+                  <label required="true">사고 발생 시간</label>
+                  <input name="incident_time" type="time" required />
+                </field>
+              </grid>
+
+              <field>
+                <label required="true">사고 발생 장소</label>
+                <input name="incident_location" type="text" placeholder="서울시 금천구 가산디지털단지 ABC빌딩 3층" required />
+              </field>
+
+              <field>
+                <label required="true">부상 유형</label>
+                <select name="injury_type" required>
+                  <option value="">선택하세요</option>
+                  <option value="골절">골절</option>
+                  <option value="염좌">염좌</option>
+                  <option value="절단">절단</option>
+                  <option value="화상">화상</option>
+                  <option value="타박상">타박상</option>
+                  <option value="기타">기타</option>
+                </select>
+              </field>
+
+              <field>
+                <label required="true">심각도</label>
+                <radio-group name="severity_level" required>
+                  <radio value="minor">경상 (간단한 치료)</radio>
+                  <radio value="moderate">중상 (입원 치료)</radio>
+                  <radio value="severe">중상 (수술 필요)</radio>
+                  <radio value="critical">위중 (생명 위험)</radio>
+                </radio-group>
+              </field>
+
+              <field>
+                <label required="true">사고 경위 및 상세 내용</label>
+                <textarea name="incident_description" rows="6"
+                          placeholder="사고가 어떻게 발생했는지 구체적으로 작성해주세요..." required></textarea>
+              </field>
+            </form-section>
+          </card>
+
+          <!-- 3단계: 의료 기록 -->
+          <card class="step-card" data-step="3">
+            <header>
+              <title class="text-lg font-semibold">3. 의료 기록</title>
+              <description>치료받은 병원 및 의료 정보를 입력해주세요</description>
+            </header>
+
+            <form-section>
+              <grid class="grid-cols-1 md:grid-cols-2 gap-6">
+                <field>
+                  <label required="true">치료 병원명</label>
+                  <input name="hospital_name" type="text" placeholder="가산 종합병원" required />
+                </field>
+
+                <field>
+                  <label required="true">진료과</label>
+                  <input name="department" type="text" placeholder="정형외과" required />
+                </field>
+
+                <field>
+                  <label required="true">담당 의사</label>
+                  <input name="doctor_name" type="text" placeholder="김의사" />
+                </field>
+
+                <field>
+                  <label required="true">예상 치료 기간</label>
+                  <input name="treatment_period" type="text" placeholder="4주" />
+                </field>
+              </grid>
+
+              <field>
+                <label required="true">진단명</label>
+                <input name="diagnosis" type="text" placeholder="우측 발목 염좌" required />
+              </field>
+
+              <field>
+                <label>예상 의료비</label>
+                <input name="medical_cost" type="number" placeholder="500000" />
+                <help-text>원 단위로 입력하세요 (예: 500000)</help-text>
+              </field>
+            </form-section>
+          </card>
+
+          <!-- 4단계: 서류 업로드 -->
+          <card class="step-card" data-step="4">
+            <header>
+              <title class="text-lg font-semibold">4. 서류 업로드</title>
+              <description>필요한 서류들을 업로드해주세요</description>
+            </header>
+
+            <form-section>
+              <upload-area>
+                <required-documents>
+                  <document-item>
+                    <icon name="document" />
+                    <title>진단서</title>
+                    <status>필수</status>
+                    <upload-button name="diagnosis_file">파일 선택</upload-button>
+                  </document-item>
+
+                  <document-item>
+                    <icon name="document" />
+                    <title>소견서</title>
+                    <status>필수</status>
+                    <upload-button name="opinion_file">파일 선택</upload-button>
+                  </document-item>
+
+                  <document-item>
+                    <icon name="document" />
+                    <title>사고경위서</title>
+                    <status>필수</status>
+                    <upload-button name="incident_report_file">파일 선택</upload-button>
+                  </document-item>
+                </required-documents>
+
+                <optional-documents>
+                  <document-item>
+                    <icon name="document" />
+                    <title>검사 결과서</title>
+                    <status>선택</status>
+                    <upload-button name="test_result_file">파일 선택</upload-button>
+                  </document-item>
+
+                  <document-item>
+                    <icon name="document" />
+                    <title>사진 자료</title>
+                    <status>선택</status>
+                    <upload-button name="photo_files" multiple>파일 선택</upload-button>
+                  </document-item>
+                </optional-documents>
+
+                <upload-guidelines>
+                  <title>업로드 가이드라인</title>
+                  <list>
+                    <item>지원 형식: PDF, JPG, PNG, DOC, DOCX</item>
+                    <item>최대 파일 크기: 10MB</item>
+                    <item>모든 서류는 선명하게 촬영해주세요</item>
+                  </list>
+                </upload-guidelines>
+              </upload-area>
+            </form-section>
+          </card>
+
+          <!-- 5단계: 검토 및 제출 -->
+          <card class="step-card" data-step="5">
+            <header>
+              <title class="text-lg font-semibold">5. 검토 및 제출</title>
+              <description>입력한 정보를 검토하고 신청을 완료하세요</description>
+            </header>
+
+            <form-section>
+              <summary-section>
+                <summary-item>
+                  <label>신청자</label>
+                  <value>{applicant_name}</value>
+                </summary-item>
+
+                <summary-item>
+                  <label>사고일</label>
+                  <value>{incident_date}</value>
+                </summary-item>
+
+                <summary-item>
+                  <label>부상 유형</label>
+                  <value>{injury_type}</value>
+                </summary-item>
+
+                <summary-item>
+                  <label>치료 병원</label>
+                  <value>{hospital_name}</value>
+                </summary-item>
+              </summary-section>
+
+              <agreement-section>
+                <checkbox name="agree_terms" required>
+                  개인정보 수집 및 이용에 동의합니다
+                </checkbox>
+                <checkbox name="agree_medical" required>
+                  의료정보 제공에 동의합니다
+                </checkbox>
+                <checkbox name="agree_processing" required>
+                  신청서 처리를 위한 정보 활용에 동의합니다
+                </checkbox>
+              </agreement-section>
+            </form-section>
+          </card>
+
+          <!-- 폼 네비게이션 -->
+          <form-navigation>
+            <button type="button" class="secondary" id="prev-btn" style="display: none;">
+              이전 단계
+            </button>
+
+            <button type="button" class="primary" id="next-btn">
+              다음 단계
+            </button>
+
+            <button type="submit" class="primary" id="submit-btn" style="display: none;">
+              신청서 제출
+            </button>
+          </form-navigation>
+        </form>
+      </container>
+    </section>
+  </layout>
+</page>

@@ -1,0 +1,557 @@
+{% extends "base.html" %}
+
+{% block title %}AI 판례 검색 결과 - SANZERO{% endblock %}
+
+{% block content %}
+<div class="container mx-auto px-4 py-8">
+    <!-- 페이지 헤더 -->
+    <div class="mb-8">
+        <div class="flex items-center justify-between mb-4">
+            <div class="flex items-center">
+                <a href="/" class="text-gray-500 hover:text-gray-700 mr-4">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
+                    </svg>
+                </a>
+                <h1 class="text-3xl font-bold text-gray-900">유사 판례 검색 결과</h1>
+                <div class="ml-4 px-3 py-1 bg-blue-100 text-blue-700 text-sm font-medium rounded-full">
+                    🚀 동적 임계값 적용
+                </div>
+            </div>
+            <div class="text-sm text-gray-500">
+                {% if analysis and analysis.id %}
+                    요청 ID: {{ analysis.id[:8] }}...
+                {% else %}
+                    요청 ID: 처리 중...
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- 상태 표시 -->
+        <div class="flex items-center space-x-4">
+            <span class="px-3 py-1 rounded-full text-sm font-medium
+                {% if analysis and analysis.status == 'completed' %}bg-green-100 text-green-800
+                {% elif analysis and analysis.status == 'processing' %}bg-yellow-100 text-yellow-800
+                {% elif analysis and analysis.status == 'failed' %}bg-red-100 text-red-800
+                {% else %}bg-gray-100 text-gray-800{% endif %}">
+                {% if analysis and analysis.status == 'completed' %}✅ 검색 완료
+                {% elif analysis and analysis.status == 'processing' %}⏳ 검색 진행중
+                {% elif analysis and analysis.status == 'failed' %}❌ 검색 실패
+                {% elif processing %}⏳ AI 분석 중...
+                {% elif error %}❌ 분석 오류
+                {% else %}⏸️ 검색 대기{% endif %}
+            </span>
+            {% if analysis and analysis.processing_time_ms %}
+            <span class="text-sm text-gray-600">
+                처리 시간: {{ "%.1f"|format(analysis.processing_time_ms / 1000) }}초
+            </span>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- 에러 표시 -->
+    {% if error %}
+    <div class="bg-red-50 border-l-4 border-red-400 p-4 mb-8">
+        <div class="flex">
+            <div class="flex-shrink-0">
+                <svg class="h-5 w-5 text-red-400" viewBox="0 0 20 20" fill="currentColor">
+                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd" />
+                </svg>
+            </div>
+            <div class="ml-3">
+                <p class="text-sm text-red-700">{{ error }}</p>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- 처리 중 표시 -->
+    {% if processing %}
+    <div class="bg-blue-50 border-l-4 border-blue-400 p-4 mb-8">
+        <div class="flex">
+            <div class="flex-shrink-0">
+                <svg class="animate-spin h-5 w-5 text-blue-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+            </div>
+            <div class="ml-3">
+                <p class="text-sm text-blue-700">AI가 판례를 분석하고 있습니다. 잠시만 기다려주세요...</p>
+                <script>
+                    setTimeout(function() { window.location.reload(); }, 5000);
+                </script>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    {% if analysis and analysis.status == 'completed' %}
+    <!-- FastSearchPipeline 결과는 이미 정규화되어 있으므로 직접 사용 -->
+
+    <!-- 🎯 1단계: 검색 결과 개요 (이미지 1 스타일) -->
+    <div class="bg-white rounded-lg shadow-md p-6 mb-8">
+        <h2 class="text-2xl font-bold text-gray-900 mb-6 flex items-center">
+            <svg class="w-6 h-6 mr-3 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
+            </svg>
+            검색 결과
+        </h2>
+
+        <!-- 핵심 통계 (4개 카드) -->
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-6 mb-8">
+            <!-- 총 판례 수 -->
+            <div class="text-center p-6 bg-gradient-to-br from-blue-50 to-blue-100 rounded-lg border border-blue-200">
+                <div class="text-3xl font-bold text-blue-600 mb-2">
+                    {{ analysis.precedent_list|length if analysis.precedent_list else 0 }}건
+                </div>
+                <div class="text-sm text-blue-700 font-medium">발견된 유사 판례</div>
+            </div>
+
+            <!-- 유불리 분포 -->
+            {% if analysis.precedent_list %}
+            {% set favorable_count = analysis.precedent_list|selectattr("worker_favorable", "equalto", "유리 O")|list|length %}
+            {% set unfavorable_count = analysis.precedent_list|selectattr("worker_favorable", "equalto", "불리 X")|list|length %}
+            {% set neutral_count = analysis.precedent_list|selectattr("worker_favorable", "equalto", "애매 △")|list|length %}
+            {% else %}
+            {% set favorable_count = 0 %}
+            {% set unfavorable_count = 0 %}
+            {% set neutral_count = 0 %}
+            {% endif %}
+            {% set total_analyzed = favorable_count + unfavorable_count + neutral_count %}
+            {% set favorable_ratio = (favorable_count / total_analyzed * 100)|round(0) if total_analyzed > 0 else 0 %}
+
+            <div class="text-center p-6 bg-gradient-to-br from-green-50 to-green-100 rounded-lg border border-green-200">
+                <div class="text-3xl font-bold text-green-600 mb-2">
+                    {{ favorable_ratio|int }}%
+                </div>
+                <div class="text-sm text-green-700 font-medium">유리 판례</div>
+                <div class="text-xs text-green-600 mt-1">
+                    {{ favorable_count }}/{{ total_analyzed }}건
+                </div>
+            </div>
+
+            <!-- 동적 임계값 -->
+            <div class="text-center p-6 bg-gradient-to-br from-purple-50 to-purple-100 rounded-lg border border-purple-200">
+                <div class="text-3xl font-bold text-purple-600 mb-2">
+                    {% if analysis.dynamic_threshold and analysis.dynamic_threshold.get('dynamic_threshold') %}
+                        {{ "%.1f"|format(analysis.dynamic_threshold.get('dynamic_threshold', 0.5) * 100) }}%
+                    {% elif analysis.dynamic_threshold and analysis.dynamic_threshold.get('final_threshold') %}
+                        {{ "%.1f"|format(analysis.dynamic_threshold.final_threshold * 100) }}%
+                    {% else %}
+                        50.0%
+                    {% endif %}
+                </div>
+                <div class="text-sm text-purple-700 font-medium">AI 최적 임계값</div>
+                <div class="text-xs text-purple-600 mt-1">동적 계산됨</div>
+            </div>
+
+            <!-- 신뢰도 점수 -->
+            <div class="text-center p-6 bg-gradient-to-br from-orange-50 to-orange-100 rounded-lg border border-orange-200">
+                <div class="text-3xl font-bold text-orange-600 mb-2">
+                    {{ "%.0f"|format((analysis.confidence_score or 0.5) * 100) }}%
+                </div>
+                <div class="text-sm text-orange-700 font-medium">종합 신뢰도</div>
+                <div class="text-xs text-orange-600 mt-1">AI 평가</div>
+            </div>
+        </div>
+
+        <!-- 🎯 동적 임계값 투명성 정보 -->
+        {% if analysis.dynamic_threshold %}
+        <div class="bg-gray-50 rounded-lg p-6 mb-6">
+            <h3 class="text-lg font-bold text-gray-900 mb-4 flex items-center">
+                <svg class="w-5 h-5 mr-2 text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"></path>
+                </svg>
+                AI 임계값 계산 과정
+            </h3>
+
+            <div class="grid md:grid-cols-3 gap-4 mb-4">
+                <!-- 기본 임계값 -->
+                <div class="bg-white rounded-lg p-4 border">
+                    <h4 class="text-sm font-semibold text-gray-800 mb-2">📊 기본 임계값</h4>
+                    <div class="text-xl font-bold text-gray-600">
+                        {{ "%.1f"|format(analysis.dynamic_threshold.get('base_threshold', 0.5) * 100) }}%
+                    </div>
+                    <p class="text-xs text-gray-600 mt-1">시작 기준점</p>
+                </div>
+
+                <!-- 총 조정값 -->
+                <div class="bg-white rounded-lg p-4 border">
+                    <h4 class="text-sm font-semibold text-gray-800 mb-2">⚙️ AI 조정</h4>
+                    {% set final_threshold = analysis.dynamic_threshold.get('final_threshold') or analysis.dynamic_threshold.get('dynamic_threshold', 0.5) %}
+                    {% set base_threshold = analysis.dynamic_threshold.get('base_threshold', 0.5) %}
+                    {% set total_adjustment = (final_threshold - base_threshold) * 100 %}
+                    <div class="text-xl font-bold {% if total_adjustment > 0 %}text-red-600{% else %}text-green-600{% endif %}">
+                        {{ "{:+.1f}".format(total_adjustment) }}%
+                    </div>
+                    <p class="text-xs text-gray-600 mt-1">자동 조정값</p>
+                </div>
+
+                <!-- 최종 임계값 -->
+                <div class="bg-white rounded-lg p-4 border border-indigo-200">
+                    <h4 class="text-sm font-semibold text-indigo-800 mb-2">🎯 최종 적용</h4>
+                    <div class="text-xl font-bold text-indigo-600">
+                        {{ "%.1f"|format(final_threshold * 100) }}%
+                    </div>
+                    <p class="text-xs text-indigo-600 mt-1">최적화 완료</p>
+                </div>
+            </div>
+
+            <!-- 조정 근거 -->
+            {% if analysis.dynamic_threshold and analysis.dynamic_threshold.get('reasoning') and analysis.dynamic_threshold.reasoning.get('threshold_explanation') %}
+            <div class="bg-indigo-50 rounded-lg p-4">
+                <h4 class="text-sm font-semibold text-indigo-800 mb-2">💡 AI 판단 근거</h4>
+                <p class="text-sm text-indigo-700">{{ analysis.dynamic_threshold.reasoning.threshold_explanation }}</p>
+            </div>
+            {% elif analysis.dynamic_threshold and analysis.dynamic_threshold.get('threshold_explanation') %}
+            <div class="bg-indigo-50 rounded-lg p-4">
+                <h4 class="text-sm font-semibold text-indigo-800 mb-2">💡 AI 판단 근거</h4>
+                <p class="text-sm text-indigo-700">{{ analysis.dynamic_threshold.threshold_explanation }}</p>
+            </div>
+            {% endif %}
+        </div>
+        {% endif %}
+
+        <!-- 🎯 판례 목록 (카드 형태) -->
+        {% if analysis.tfidf_results %}
+        <div>
+            <h3 class="text-lg font-bold text-gray-900 mb-4 flex items-center">
+                <svg class="w-5 h-5 mr-2 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                </svg>
+                📚 유사 판례 목록 ({{ analysis.tfidf_results|length }}건)
+            </h3>
+
+            <div class="grid gap-4">
+                {% for precedent in analysis.tfidf_results %}
+                <div class="bg-white border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow">
+                    <div class="flex items-start justify-between mb-3">
+                        <div class="flex-1">
+                            <div class="flex items-center gap-2 mb-2">
+                                <!-- 순위 -->
+                                <span class="bg-blue-100 text-blue-800 text-sm font-medium px-2 py-1 rounded">
+                                    #{{ loop.index }}
+                                </span>
+
+                                <!-- 유불리 배지 -->
+                                <span class="text-sm font-medium px-2 py-1 rounded
+                                    {% if precedent.get('worker_favorable', '') == '유리 O' %}bg-green-100 text-green-800
+                                    {% elif precedent.get('worker_favorable', '') == '불리 X' %}bg-red-100 text-red-800
+                                    {% else %}bg-yellow-100 text-yellow-800{% endif %}">
+                                    {{ precedent.get('worker_favorable', '') }}
+                                </span>
+
+                                <!-- 매칭 키워드 -->
+                                {% if precedent.get('match_keywords', '') and precedent.get('match_keywords', '') != '-' %}
+                                <div class="flex flex-wrap gap-1">
+                                    {% for keyword in precedent.get('match_keywords', '').split(',')[:3] %}
+                                    <span class="text-xs bg-gray-100 text-gray-700 px-2 py-1 rounded">
+                                        {{ keyword.strip() }}
+                                    </span>
+                                    {% endfor %}
+                                </div>
+                                {% endif %}
+                            </div>
+
+                            <h4 class="font-bold text-gray-900 mb-1">{{ precedent.get('title', '') }}</h4>
+                            <p class="text-sm text-gray-600 mb-2">{{ precedent.get('court', '') }} | {{ precedent.get('date', '') }}</p>
+                        </div>
+
+                        <!-- 유사도 표시 -->
+                        <div class="text-right ml-4">
+                            <div class="text-lg font-bold text-blue-600">
+                                {{ precedent.get('similarity_pct', 0) }}%
+                            </div>
+                            <div class="text-xs text-gray-500">유사도</div>
+                        </div>
+                    </div>
+
+                    <!-- 판례 요약 -->
+                    <p class="text-sm text-gray-700 mb-3 leading-relaxed">
+                        {{ precedent.get('content', '')[:200] }}{% if precedent.get('content', '')|length > 200 %}...{% endif %}
+                    </p>
+
+                    <!-- 상세 분석 버튼 -->
+                    <div class="flex justify-end">
+                        <button onclick="showDetailedAnalysis({{ loop.index0 }})"
+                                class="text-blue-600 hover:text-blue-800 text-sm font-medium flex items-center">
+                            <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
+                            </svg>
+                            상세 분석
+                        </button>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- 🎯 2단계: 상세 분석 결과 (이미지 2 스타일) -->
+    {% if analysis.tfidf_results %}
+    <div class="bg-white rounded-lg shadow-md p-6 mb-8">
+        <h2 class="text-2xl font-bold text-gray-900 mb-6 flex items-center">
+            <svg class="w-6 h-6 mr-3 text-purple-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2V7a2 2 0 00-2-2z"></path>
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 5h2a2 2 0 012 2v6a2 2 0 01-2 2h-2a2 2 0 01-2-2V7a2 2 0 012-2z"></path>
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 17h8m0 0V9m0 8l-8-8-4 4-6-6"></path>
+            </svg>
+            상세 분석 (상위 3건)
+        </h2>
+
+        <div class="space-y-8">
+            {% for precedent in analysis.tfidf_results[:3] %}
+            <div id="detail-{{ loop.index0 }}" class="border border-gray-200 rounded-lg p-6 bg-gray-50">
+                <!-- 헤더 -->
+                <div class="mb-6">
+                    <div class="flex items-center justify-between mb-4">
+                        <div class="flex items-center gap-3">
+                            <span class="bg-purple-100 text-purple-800 text-sm font-medium px-3 py-1 rounded-full">
+                                상세 분석 #{{ loop.index }}
+                            </span>
+                            <span class="bg-gray-100 text-gray-700 text-sm px-2 py-1 rounded">
+                                {{ precedent.get('category', '') }}
+                            </span>
+                        </div>
+                        <div class="text-right">
+                            <div class="text-lg font-bold text-purple-600">{{ precedent.get('similarity_pct', 0) }}%</div>
+                            <div class="text-xs text-gray-500">관련도</div>
+                        </div>
+                    </div>
+
+                    <h3 class="text-xl font-bold text-gray-900 mb-2">{{ precedent.get('title', '') }}</h3>
+                    <p class="text-sm text-gray-600 flex items-center">
+                        <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-6m-2-2h6m-6 2h2m-2 0v-2m0 2h-2m2 0h2m-6 0h6m-2-2h2m2 2h2"></path>
+                        </svg>
+                        {{ precedent.get('court', '') }} | {{ precedent.get('date', '') }}
+                    </p>
+                </div>
+
+                <!-- 분석 그리드 -->
+                <div class="grid md:grid-cols-2 gap-6">
+                    <!-- 왼쪽: 사실관계 및 쟁점 -->
+                    <div class="space-y-6">
+                        <!-- 사실관계 -->
+                        <div>
+                            <h4 class="font-semibold text-gray-900 mb-3 flex items-center">
+                                <svg class="w-4 h-4 mr-2 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                                </svg>
+                                📝 사실관계
+                            </h4>
+                            <div class="bg-white rounded-lg p-4 border">
+                                <p class="text-sm text-gray-700 leading-relaxed">
+                                    {{ precedent.get('content', '')[:400] }}{% if precedent.get('content', '')|length > 400 %}...{% endif %}
+                                </p>
+                            </div>
+                        </div>
+
+                        <!-- 매칭 키워드 -->
+                        {% if precedent.get('match_keywords', '') and precedent.get('match_keywords', '') != '-' %}
+                        <div>
+                            <h4 class="font-semibold text-gray-900 mb-3 flex items-center">
+                                <svg class="w-4 h-4 mr-2 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"></path>
+                                </svg>
+                                🏷️ 매칭 키워드
+                            </h4>
+                            <div class="flex flex-wrap gap-2">
+                                {% for keyword in precedent.get('match_keywords', '').split(',') %}
+                                <span class="bg-green-100 text-green-800 text-sm px-3 py-1 rounded-full">
+                                    {{ keyword.strip() }}
+                                </span>
+                                {% endfor %}
+                            </div>
+                        </div>
+                        {% endif %}
+                    </div>
+
+                    <!-- 오른쪽: 법적 분석 -->
+                    <div class="space-y-6">
+                        <!-- 유불리 분석 -->
+                        <div>
+                            <h4 class="font-semibold text-gray-900 mb-3 flex items-center">
+                                <svg class="w-4 h-4 mr-2 text-orange-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
+                                </svg>
+                                ⚖️ 근로자 유불리 분석
+                            </h4>
+                            <div class="bg-white rounded-lg p-4 border">
+                                <div class="flex items-center justify-between mb-2">
+                                    <span class="font-medium text-gray-900">판단 결과</span>
+                                    <span class="font-bold text-lg
+                                        {% if precedent.get('worker_favorable', '') == '유리 O' %}text-green-600
+                                        {% elif precedent.get('worker_favorable', '') == '불리 X' %}text-red-600
+                                        {% else %}text-yellow-600{% endif %}">
+                                        {{ precedent.get('worker_favorable', '') }}
+                                    </span>
+                                </div>
+
+                                <!-- 점수 세부 정보 -->
+                                {% if precedent.get('favorability_score') %}
+                                <div class="grid grid-cols-2 gap-3 mt-3 text-sm">
+                                    <div class="bg-green-50 rounded p-2">
+                                        <div class="font-medium text-green-800">유리 요소</div>
+                                        <div class="text-green-600">{{ precedent.get('favorability_score', {}).get('favorable', 0) }}점</div>
+                                    </div>
+                                    <div class="bg-red-50 rounded p-2">
+                                        <div class="font-medium text-red-800">불리 요소</div>
+                                        <div class="text-red-600">{{ precedent.get('favorability_score', {}).get('unfavorable', 0) }}점</div>
+                                    </div>
+                                </div>
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        <!-- 참고 정보 -->
+                        <div>
+                            <h4 class="font-semibold text-gray-900 mb-3 flex items-center">
+                                <svg class="w-4 h-4 mr-2 text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                </svg>
+                                💡 참고 정보
+                            </h4>
+                            <div class="bg-white rounded-lg p-4 border space-y-3 text-sm">
+                                <div class="flex justify-between">
+                                    <span class="text-gray-600">사건 ID:</span>
+                                    <span class="text-gray-900 font-mono">{{ precedent.get('case_id', '') }}</span>
+                                </div>
+                                <div class="flex justify-between">
+                                    <span class="text-gray-600">사건 분류:</span>
+                                    <span class="text-gray-900">{{ precedent.get('category', '') }}</span>
+                                </div>
+                                <div class="flex justify-between">
+                                    <span class="text-gray-600">유사도 점수:</span>
+                                    <span class="text-gray-900">{{ "%.4f"|format(precedent.get('similarity', 0)) }}</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 시사점 -->
+                <div class="mt-6">
+                    <h4 class="font-semibold text-gray-900 mb-3 flex items-center">
+                        <svg class="w-4 h-4 mr-2 text-yellow-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"></path>
+                        </svg>
+                        💡 시사점
+                    </h4>
+                    <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+                        <p class="text-gray-800 leading-relaxed">
+                            본 판례는 <strong>{{ precedent.get('similarity_pct', 0) }}%의 유사도</strong>를 보이며,
+                            <strong>근로자에게 {{ precedent.get('worker_favorable', '') }}</strong> 결과를 나타냅니다.
+                            {% if precedent.get('match_keywords', '') and precedent.get('match_keywords', '') != '-' %}
+                            주요 매칭 키워드인 <em>{{ precedent.get('match_keywords', '').split(',')[0].strip() }}</em> 등이
+                            현재 사건과 높은 관련성을 보이므로 참고할 가치가 있습니다.
+                            {% endif %}
+                        </p>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- 검색 권고사항 -->
+    <div class="bg-white rounded-lg shadow-md p-6 mb-6">
+        <h3 class="text-xl font-bold text-gray-900 mb-4 flex items-center">
+            <svg class="w-5 h-5 mr-2 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+            </svg>
+            🎯 AI 종합 분석 결과
+        </h3>
+        <div class="bg-blue-50 rounded-lg p-4">
+            <p class="text-gray-800 leading-relaxed">
+                {{ analysis.recommendation if analysis.recommendation else "동적 임계값을 적용한 고급 검색을 통해 정확하고 신뢰할 수 있는 판례 결과를 제공했습니다." }}
+            </p>
+        </div>
+    </div>
+
+    <!-- 원본 질의 정보 -->
+    <div class="bg-white rounded-lg shadow-md p-6">
+        <h3 class="text-xl font-bold text-gray-900 mb-4">📋 검색 질의 정보</h3>
+        <div class="grid md:grid-cols-2 gap-6">
+            <div>
+                <h4 class="font-semibold text-gray-900 mb-2">원본 질의</h4>
+                <p class="text-sm text-gray-700 leading-relaxed bg-gray-50 p-4 rounded">{{ analysis.query_text }}</p>
+            </div>
+            <div>
+                <h4 class="font-semibold text-gray-900 mb-2">검색 정보</h4>
+                <div class="space-y-2 text-sm bg-gray-50 p-4 rounded">
+                    <div class="flex justify-between">
+                        <span class="text-gray-600">검색 시간:</span>
+                        <span class="text-gray-900">
+                            {% if analysis.created_at %}{{ analysis.created_at[:16] }}{% else %}-{% endif %}
+                        </span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="text-gray-600">처리 시간:</span>
+                        <span class="text-gray-900">{{ "%.1f"|format((analysis.processing_time_ms or 0) / 1000) }}초</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="text-gray-600">검색 방식:</span>
+                        <span class="text-gray-900">동적 임계값 + AI 분석</span>
+                    </div>
+                    <div class="flex justify-between pt-2 border-t">
+                        <span class="text-gray-600">유리 판례:</span>
+                        <span class="text-gray-900 font-medium text-green-600">{{ favorable_count }}건</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="text-gray-600">불리 판례:</span>
+                        <span class="text-gray-900 font-medium text-red-600">{{ unfavorable_count }}건</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="text-gray-600">중립 판례:</span>
+                        <span class="text-gray-900 font-medium text-yellow-600">{{ neutral_count }}건</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {% else %}
+    <!-- 처리 중이거나 실패 상태 -->
+    <div class="bg-gray-50 border border-gray-200 rounded-lg p-8 text-center">
+        <h3 class="text-lg font-medium text-gray-900 mb-2">
+            {% if analysis.status == 'processing' %}검색 진행중{% elif analysis.status == 'failed' %}검색 실패{% else %}검색 결과 없음{% endif %}
+        </h3>
+        <p class="text-gray-600">
+            {% if analysis.status == 'processing' %}판례 검색을 수행하고 있습니다. 잠시 기다려주세요.
+            {% elif analysis.status == 'failed' %}검색 처리 중 오류가 발생했습니다.
+            {% else %}검색이 아직 시작되지 않았거나 결과를 불러올 수 없습니다.{% endif %}
+        </p>
+    </div>
+    {% endif %}
+</div>
+
+<script>
+// 상세 분석 표시 함수
+function showDetailedAnalysis(index) {
+    const detailElement = document.getElementById(`detail-${index}`);
+    if (detailElement) {
+        detailElement.scrollIntoView({
+            behavior: 'smooth',
+            block: 'center'
+        });
+
+        // 하이라이트 효과
+        detailElement.classList.add('ring-2', 'ring-purple-300', 'ring-opacity-50');
+        setTimeout(() => {
+            detailElement.classList.remove('ring-2', 'ring-purple-300', 'ring-opacity-50');
+        }, 2000);
+    }
+}
+
+// 진행중 상태일 때 자동 새로고침
+{% if analysis.status == 'processing' %}
+setTimeout(function() {
+    location.reload();
+}, 30000); // 30초마다 새로고침
+{% endif %}
+</script>
+{% endblock %}

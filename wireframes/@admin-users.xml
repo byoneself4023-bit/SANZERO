@@ -1,0 +1,422 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- 사용자 관리 페이지 -->
+<page name="admin-users" title="사용자 관리 - SANZERO">
+  <layout type="main">
+    <!-- 페이지 헤더 -->
+    <section class="page-header">
+      <container class="max-w-7xl mx-auto px-4 py-8">
+        <breadcrumb>
+          <link href="/">홈</link>
+          <link href="/admin">관리자</link>
+          <current>사용자 관리</current>
+        </breadcrumb>
+
+        <div class="flex justify-between items-center">
+          <div>
+            <heading level="1" class="text-3xl font-bold text-gray-900 mb-2">
+              사용자 관리
+            </heading>
+            <text class="text-gray-600">
+              플랫폼 사용자들의 계정과 권한을 관리하세요
+            </text>
+          </div>
+          <actions class="flex space-x-3">
+            <button class="secondary">
+              <icon name="download" class="w-4 h-4 mr-2" />
+              내보내기
+            </button>
+            <button class="primary">
+              <icon name="user-plus" class="w-4 h-4 mr-2" />
+              사용자 추가
+            </button>
+          </actions>
+        </div>
+      </container>
+    </section>
+
+    <container class="max-w-7xl mx-auto px-4">
+      <!-- 통계 요약 -->
+      <stats-section class="mb-8">
+        <grid class="grid-cols-1 md:grid-cols-4 gap-6">
+          <stat-card class="bg-white rounded-lg shadow border p-6">
+            <stat-header class="flex items-center justify-between">
+              <icon name="users" class="w-8 h-8 text-blue-600" />
+              <trend class="text-sm text-green-600">↑ 12.5%</trend>
+            </stat-header>
+            <stat-value class="text-3xl font-bold text-gray-900 mt-4">2,847</stat-value>
+            <stat-label class="text-gray-600">총 사용자</stat-label>
+          </stat-card>
+
+          <stat-card class="bg-white rounded-lg shadow border p-6">
+            <stat-header class="flex items-center justify-between">
+              <icon name="user-check" class="w-8 h-8 text-green-600" />
+              <trend class="text-sm text-green-600">↑ 8.3%</trend>
+            </stat-header>
+            <stat-value class="text-3xl font-bold text-gray-900 mt-4">2,654</stat-value>
+            <stat-label class="text-gray-600">활성 사용자</stat-label>
+          </stat-card>
+
+          <stat-card class="bg-white rounded-lg shadow border p-6">
+            <stat-header class="flex items-center justify-between">
+              <icon name="scale" class="w-8 h-8 text-purple-600" />
+              <trend class="text-sm text-green-600">↑ 15.2%</trend>
+            </stat-header>
+            <stat-value class="text-3xl font-bold text-gray-900 mt-4">47</stat-value>
+            <stat-label class="text-gray-600">노무사</stat-label>
+          </stat-card>
+
+          <stat-card class="bg-white rounded-lg shadow border p-6">
+            <stat-header class="flex items-center justify-between">
+              <icon name="user-plus" class="w-8 h-8 text-orange-600" />
+              <trend class="text-sm text-green-600">↑ 25.7%</trend>
+            </stat-header>
+            <stat-value class="text-3xl font-bold text-gray-900 mt-4">324</stat-value>
+            <stat-label class="text-gray-600">이번 달 가입</stat-label>
+          </stat-card>
+        </grid>
+      </stats-section>
+
+      <!-- 필터 및 검색 -->
+      <filters-section class="mb-6">
+        <card class="p-4">
+          <form class="flex flex-wrap gap-4 items-end">
+            <!-- 사용자 유형 -->
+            <field>
+              <label class="block text-sm font-medium text-gray-700 mb-1">사용자 유형</label>
+              <select name="user_type" class="border border-gray-300 rounded-md px-3 py-2">
+                <option value="">전체</option>
+                <option value="general">일반 사용자</option>
+                <option value="lawyer">노무사</option>
+                <option value="admin">관리자</option>
+              </select>
+            </field>
+
+            <!-- 계정 상태 -->
+            <field>
+              <label class="block text-sm font-medium text-gray-700 mb-1">계정 상태</label>
+              <select name="status" class="border border-gray-300 rounded-md px-3 py-2">
+                <option value="">전체</option>
+                <option value="active">활성</option>
+                <option value="inactive">비활성</option>
+                <option value="suspended">정지</option>
+                <option value="pending">승인 대기</option>
+              </select>
+            </field>
+
+            <!-- 가입일 -->
+            <field>
+              <label class="block text-sm font-medium text-gray-700 mb-1">가입일</label>
+              <date-range class="flex items-center space-x-2">
+                <input name="start_date" type="date" class="border border-gray-300 rounded-md px-3 py-2" />
+                <span class="text-gray-500">~</span>
+                <input name="end_date" type="date" class="border border-gray-300 rounded-md px-3 py-2" />
+              </date-range>
+            </field>
+
+            <!-- 검색 -->
+            <field class="flex-1">
+              <label class="block text-sm font-medium text-gray-700 mb-1">검색</label>
+              <search-input name="search" placeholder="이름, 이메일, 사용자명..." class="w-full border border-gray-300 rounded-md px-3 py-2" />
+            </field>
+
+            <!-- 버튼 -->
+            <field class="flex space-x-2">
+              <button type="submit" class="primary">검색</button>
+              <button type="reset" class="secondary">초기화</button>
+            </field>
+          </form>
+        </card>
+      </filters-section>
+
+      <!-- 사용자 목록 -->
+      <users-table class="bg-white rounded-lg shadow border overflow-hidden">
+        <!-- 테이블 헤더 -->
+        <table-header class="bg-gray-50 border-b">
+          <table-row class="grid grid-cols-12 gap-4 px-6 py-3 text-sm font-medium text-gray-700">
+            <column class="col-span-1">
+              <checkbox class="rounded" />
+            </column>
+            <column class="col-span-3">사용자</column>
+            <column class="col-span-2">유형</column>
+            <column class="col-span-2">상태</column>
+            <column class="col-span-2">가입일</column>
+            <column class="col-span-2">작업</column>
+          </table-row>
+        </table-header>
+
+        <!-- 테이블 본문 -->
+        <table-body>
+          <!-- 사용자 행 1 -->
+          <table-row class="grid grid-cols-12 gap-4 px-6 py-4 border-b hover:bg-gray-50">
+            <cell class="col-span-1 flex items-center">
+              <checkbox class="rounded" />
+            </cell>
+            <cell class="col-span-3 flex items-center">
+              <avatar class="w-10 h-10 bg-gray-300 rounded-full mr-3 flex items-center justify-center">
+                <icon name="user" class="w-5 h-5 text-gray-600" />
+              </avatar>
+              <user-info>
+                <name class="font-medium text-gray-900">김철수</name>
+                <email class="text-sm text-gray-500">kim@example.com</email>
+              </user-info>
+            </cell>
+            <cell class="col-span-2 flex items-center">
+              <user-type-badge class="bg-blue-100 text-blue-800 px-2 py-1 rounded-full text-xs">
+                일반 사용자
+              </user-type-badge>
+            </cell>
+            <cell class="col-span-2 flex items-center">
+              <status-badge class="bg-green-100 text-green-800 px-2 py-1 rounded-full text-xs flex items-center">
+                <dot class="w-2 h-2 bg-green-500 rounded-full mr-1"></dot>
+                활성
+              </status-badge>
+            </cell>
+            <cell class="col-span-2 flex items-center text-sm text-gray-600">
+              2024.01.15
+            </cell>
+            <cell class="col-span-2 flex items-center space-x-2">
+              <button class="text-blue-600 hover:text-blue-700 p-1" title="상세 보기">
+                <icon name="eye" class="w-4 h-4" />
+              </button>
+              <button class="text-green-600 hover:text-green-700 p-1" title="편집">
+                <icon name="edit" class="w-4 h-4" />
+              </button>
+              <button class="text-red-600 hover:text-red-700 p-1" title="정지">
+                <icon name="ban" class="w-4 h-4" />
+              </button>
+            </cell>
+          </table-row>
+
+          <!-- 사용자 행 2 -->
+          <table-row class="grid grid-cols-12 gap-4 px-6 py-4 border-b hover:bg-gray-50">
+            <cell class="col-span-1 flex items-center">
+              <checkbox class="rounded" />
+            </cell>
+            <cell class="col-span-3 flex items-center">
+              <avatar class="w-10 h-10 bg-gray-300 rounded-full mr-3 flex items-center justify-center">
+                <icon name="user" class="w-5 h-5 text-gray-600" />
+              </avatar>
+              <user-info>
+                <name class="font-medium text-gray-900">이노무사</name>
+                <email class="text-sm text-gray-500">lawyer@example.com</email>
+              </user-info>
+            </cell>
+            <cell class="col-span-2 flex items-center">
+              <user-type-badge class="bg-purple-100 text-purple-800 px-2 py-1 rounded-full text-xs">
+                노무사
+              </user-type-badge>
+            </cell>
+            <cell class="col-span-2 flex items-center">
+              <status-badge class="bg-yellow-100 text-yellow-800 px-2 py-1 rounded-full text-xs flex items-center">
+                <dot class="w-2 h-2 bg-yellow-500 rounded-full mr-1"></dot>
+                승인 대기
+              </status-badge>
+            </cell>
+            <cell class="col-span-2 flex items-center text-sm text-gray-600">
+              2024.01.20
+            </cell>
+            <cell class="col-span-2 flex items-center space-x-2">
+              <button class="text-blue-600 hover:text-blue-700 p-1" title="상세 보기">
+                <icon name="eye" class="w-4 h-4" />
+              </button>
+              <button class="text-green-600 hover:text-green-700 p-1" title="승인">
+                <icon name="check" class="w-4 h-4" />
+              </button>
+              <button class="text-red-600 hover:text-red-700 p-1" title="거부">
+                <icon name="x" class="w-4 h-4" />
+              </button>
+            </cell>
+          </table-row>
+
+          <!-- 사용자 행 3 -->
+          <table-row class="grid grid-cols-12 gap-4 px-6 py-4 border-b hover:bg-gray-50">
+            <cell class="col-span-1 flex items-center">
+              <checkbox class="rounded" />
+            </cell>
+            <cell class="col-span-3 flex items-center">
+              <avatar class="w-10 h-10 bg-gray-300 rounded-full mr-3 flex items-center justify-center">
+                <icon name="user" class="w-5 h-5 text-gray-600" />
+              </avatar>
+              <user-info>
+                <name class="font-medium text-gray-900">박영희</name>
+                <email class="text-sm text-gray-500">park@example.com</email>
+              </user-info>
+            </cell>
+            <cell class="col-span-2 flex items-center">
+              <user-type-badge class="bg-blue-100 text-blue-800 px-2 py-1 rounded-full text-xs">
+                일반 사용자
+              </user-type-badge>
+            </cell>
+            <cell class="col-span-2 flex items-center">
+              <status-badge class="bg-red-100 text-red-800 px-2 py-1 rounded-full text-xs flex items-center">
+                <dot class="w-2 h-2 bg-red-500 rounded-full mr-1"></dot>
+                정지
+              </status-badge>
+            </cell>
+            <cell class="col-span-2 flex items-center text-sm text-gray-600">
+              2024.01.10
+            </cell>
+            <cell class="col-span-2 flex items-center space-x-2">
+              <button class="text-blue-600 hover:text-blue-700 p-1" title="상세 보기">
+                <icon name="eye" class="w-4 h-4" />
+              </button>
+              <button class="text-green-600 hover:text-green-700 p-1" title="활성화">
+                <icon name="user-check" class="w-4 h-4" />
+              </button>
+              <button class="text-red-600 hover:text-red-700 p-1" title="삭제">
+                <icon name="trash" class="w-4 h-4" />
+              </button>
+            </cell>
+          </table-row>
+
+          <!-- 사용자 행 4 -->
+          <table-row class="grid grid-cols-12 gap-4 px-6 py-4 border-b hover:bg-gray-50">
+            <cell class="col-span-1 flex items-center">
+              <checkbox class="rounded" />
+            </cell>
+            <cell class="col-span-3 flex items-center">
+              <avatar class="w-10 h-10 bg-gray-300 rounded-full mr-3 flex items-center justify-center">
+                <icon name="user" class="w-5 h-5 text-gray-600" />
+              </avatar>
+              <user-info>
+                <name class="font-medium text-gray-900">최관리자</name>
+                <email class="text-sm text-gray-500">admin@sanzero.co.kr</email>
+              </user-info>
+            </cell>
+            <cell class="col-span-2 flex items-center">
+              <user-type-badge class="bg-red-100 text-red-800 px-2 py-1 rounded-full text-xs">
+                관리자
+              </user-type-badge>
+            </cell>
+            <cell class="col-span-2 flex items-center">
+              <status-badge class="bg-green-100 text-green-800 px-2 py-1 rounded-full text-xs flex items-center">
+                <dot class="w-2 h-2 bg-green-500 rounded-full mr-1"></dot>
+                활성
+              </status-badge>
+            </cell>
+            <cell class="col-span-2 flex items-center text-sm text-gray-600">
+              2023.12.01
+            </cell>
+            <cell class="col-span-2 flex items-center space-x-2">
+              <button class="text-blue-600 hover:text-blue-700 p-1" title="상세 보기">
+                <icon name="eye" class="w-4 h-4" />
+              </button>
+              <button class="text-green-600 hover:text-green-700 p-1" title="편집">
+                <icon name="edit" class="w-4 h-4" />
+              </button>
+            </cell>
+          </table-row>
+        </table-body>
+
+        <!-- 테이블 푸터 -->
+        <table-footer class="bg-gray-50 border-t px-6 py-3">
+          <div class="flex items-center justify-between">
+            <!-- 선택된 항목 -->
+            <selected-items class="text-sm text-gray-600">
+              0개 항목 선택됨
+            </selected-items>
+
+            <!-- 일괄 작업 -->
+            <bulk-actions class="flex space-x-2">
+              <button class="text-sm text-green-600 hover:text-green-700 disabled:text-gray-400" disabled>
+                일괄 승인
+              </button>
+              <button class="text-sm text-red-600 hover:text-red-700 disabled:text-gray-400" disabled>
+                일괄 정지
+              </button>
+              <button class="text-sm text-blue-600 hover:text-blue-700 disabled:text-gray-400" disabled>
+                내보내기
+              </button>
+            </bulk-actions>
+          </div>
+        </table-footer>
+      </users-table>
+
+      <!-- 페이지네이션 -->
+      <pagination class="mt-6 flex items-center justify-between">
+        <page-info class="text-sm text-gray-600">
+          총 2,847명 중 1-20명 표시
+        </page-info>
+
+        <page-controls class="flex items-center space-x-2">
+          <button class="px-3 py-2 border border-gray-300 rounded-md text-sm text-gray-600 hover:bg-gray-50 disabled:opacity-50" disabled>
+            이전
+          </button>
+          <page-number class="px-3 py-2 bg-primary-600 text-white rounded-md text-sm">1</page-number>
+          <page-number class="px-3 py-2 border border-gray-300 rounded-md text-sm text-gray-600 hover:bg-gray-50">2</page-number>
+          <page-number class="px-3 py-2 border border-gray-300 rounded-md text-sm text-gray-600 hover:bg-gray-50">3</page-number>
+          <span class="px-2 text-gray-500">...</span>
+          <page-number class="px-3 py-2 border border-gray-300 rounded-md text-sm text-gray-600 hover:bg-gray-50">143</page-number>
+          <button class="px-3 py-2 border border-gray-300 rounded-md text-sm text-gray-600 hover:bg-gray-50">
+            다음
+          </button>
+        </page-controls>
+      </pagination>
+    </container>
+
+    <!-- 사용자 상세 모달 (숨김 상태) -->
+    <user-detail-modal class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center hidden z-50" id="user-modal">
+      <modal-content class="bg-white rounded-lg shadow-xl max-w-2xl w-full mx-4 max-h-96 overflow-y-auto">
+        <modal-header class="border-b px-6 py-4 flex items-center justify-between">
+          <title class="text-lg font-semibold">사용자 상세 정보</title>
+          <button class="text-gray-400 hover:text-gray-600" id="close-modal">
+            <icon name="x" class="w-6 h-6" />
+          </button>
+        </modal-header>
+
+        <modal-body class="px-6 py-6 space-y-6">
+          <!-- 기본 정보 -->
+          <section>
+            <section-title class="font-medium text-gray-900 mb-3">기본 정보</section-title>
+            <info-grid class="grid grid-cols-2 gap-4">
+              <info-item>
+                <label class="text-sm font-medium text-gray-700">이름</label>
+                <value class="text-gray-900">김철수</value>
+              </info-item>
+              <info-item>
+                <label class="text-sm font-medium text-gray-700">이메일</label>
+                <value class="text-gray-900">kim@example.com</value>
+              </info-item>
+              <info-item>
+                <label class="text-sm font-medium text-gray-700">연락처</label>
+                <value class="text-gray-900">010-1234-5678</value>
+              </info-item>
+              <info-item>
+                <label class="text-sm font-medium text-gray-700">가입일</label>
+                <value class="text-gray-900">2024.01.15</value>
+              </info-item>
+            </info-grid>
+          </section>
+
+          <!-- 활동 현황 -->
+          <section>
+            <section-title class="font-medium text-gray-900 mb-3">활동 현황</section-title>
+            <activity-stats class="grid grid-cols-3 gap-4">
+              <stat-item class="text-center">
+                <stat-value class="text-2xl font-bold text-blue-600">3</stat-value>
+                <stat-label class="text-sm text-gray-600">보상금 신청</stat-label>
+              </stat-item>
+              <stat-item class="text-center">
+                <stat-value class="text-2xl font-bold text-green-600">2</stat-value>
+                <stat-label class="text-sm text-gray-600">상담 예약</stat-label>
+              </stat-item>
+              <stat-item class="text-center">
+                <stat-value class="text-2xl font-bold text-purple-600">15</stat-value>
+                <stat-label class="text-sm text-gray-600">AI 분석</stat-label>
+              </stat-item>
+            </activity-stats>
+          </section>
+        </modal-body>
+
+        <modal-footer class="border-t px-6 py-4 flex justify-end space-x-3">
+          <button class="secondary" id="close-modal">
+            닫기
+          </button>
+          <button class="primary">
+            편집
+          </button>
+        </modal-footer>
+      </modal-content>
+    </user-detail-modal>
+  </layout>
+</page>

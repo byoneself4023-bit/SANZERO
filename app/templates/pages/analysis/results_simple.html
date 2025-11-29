@@ -1,0 +1,174 @@
+{% extends "base.html" %}
+
+{% block title %}판례 검색 결과 - SANZERO{% endblock %}
+
+{% block content %}
+<div class="container mx-auto px-4 py-8">
+    <!-- 페이지 헤더 -->
+    <div class="mb-8">
+        <div class="flex items-center justify-between mb-4">
+            <div class="flex items-center">
+                <a href="/" class="text-gray-500 hover:text-gray-700 mr-4">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
+                    </svg>
+                </a>
+                <h1 class="text-3xl font-bold text-gray-900">유사 판례 검색 결과</h1>
+            </div>
+            <div class="text-sm text-gray-500">
+                요청 ID: {{ analysis.id[:8] }}...
+            </div>
+        </div>
+
+        <!-- 상태 표시 -->
+        <div class="flex items-center space-x-4">
+            <span class="px-3 py-1 rounded-full text-sm font-medium
+                {% if analysis.status == 'completed' %}bg-green-100 text-green-800
+                {% elif analysis.status == 'processing' %}bg-yellow-100 text-yellow-800
+                {% elif analysis.status == 'failed' %}bg-red-100 text-red-800
+                {% else %}bg-gray-100 text-gray-800{% endif %}">
+                {% if analysis.status == 'completed' %}✅ 검색 완료
+                {% elif analysis.status == 'processing' %}⏳ 검색 진행중
+                {% elif analysis.status == 'failed' %}❌ 검색 실패
+                {% else %}⏸️ 검색 대기{% endif %}
+            </span>
+            {% if analysis.processing_time_ms %}
+            <span class="text-sm text-gray-600">
+                처리 시간: {{ "%.1f"|format(analysis.processing_time_ms / 1000) }}초
+            </span>
+            {% endif %}
+        </div>
+    </div>
+
+    {% if analysis.status == 'completed' and analysis.result %}
+    {% set result = analysis.result %}
+
+    <!-- 간단한 검색 요약 -->
+    <div class="bg-white rounded-lg shadow-md p-6 mb-6">
+        <h2 class="text-xl font-bold text-gray-900 mb-4">검색 요약</h2>
+        <div class="grid md:grid-cols-3 gap-4">
+            <div class="text-center p-4 bg-blue-50 rounded-lg">
+                <div class="text-3xl font-bold text-blue-600">
+                    {{ result.precedent_list|length if result.precedent_list else 0 }}건
+                </div>
+                <div class="text-sm text-gray-600">발견된 유사 판례</div>
+            </div>
+            <div class="text-center p-4 bg-green-50 rounded-lg">
+                <div class="text-3xl font-bold text-green-600">
+                    {% if result.search_summary and result.search_summary.confidence_score %}
+                        {{ "%.0f"|format(result.search_summary.confidence_score * 100) }}%
+                    {% else %}
+                        보통
+                    {% endif %}
+                </div>
+                <div class="text-sm text-gray-600">신뢰도</div>
+            </div>
+            <div class="text-center p-4 bg-purple-50 rounded-lg">
+                <div class="text-3xl font-bold text-purple-600">
+                    {{ "%.1f"|format(analysis.processing_time_ms / 1000) if analysis.processing_time_ms else '0.0' }}초
+                </div>
+                <div class="text-sm text-gray-600">검색 시간</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 유사 판례 목록 -->
+    {% if result.precedent_list %}
+    <div class="bg-white rounded-lg shadow-md p-6">
+        <h3 class="text-xl font-bold text-gray-900 mb-6">📚 유사 판례 목록</h3>
+        <div class="space-y-6">
+            {% for item in result.precedent_list %}
+            <div class="border border-gray-200 rounded-lg p-6 hover:shadow-md transition-shadow">
+                <div class="flex items-start justify-between mb-4">
+                    <div class="flex-1">
+                        <h4 class="text-lg font-semibold text-gray-900 mb-2">
+                            {{ item.title if item.title else "판례 제목" }}
+                        </h4>
+                        <div class="flex items-center space-x-4 text-sm text-gray-500 mb-3">
+                            <span>{{ item.court if item.court else "법원 정보" }}</span>
+                            <span>{{ item.date if item.date else "날짜 정보" }}</span>
+                            {% if item.case_id %}
+                            <span class="bg-gray-100 px-2 py-1 rounded text-xs">{{ item.case_id }}</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                    {% if item.favorability %}
+                    <div class="ml-4">
+                        <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium
+                            {% if item.favorability == 'favorable' %}bg-green-100 text-green-800
+                            {% elif item.favorability == 'unfavorable' %}bg-red-100 text-red-800
+                            {% else %}bg-yellow-100 text-yellow-800{% endif %}">
+                            {% if item.favorability == 'favorable' %}유리
+                            {% elif item.favorability == 'unfavorable' %}불리
+                            {% else %}중립{% endif %}
+                        </span>
+                    </div>
+                    {% endif %}
+                </div>
+
+                <div class="prose prose-sm max-w-none">
+                    <p class="text-gray-700 leading-relaxed">
+                        {{ item.content[:300] if item.content else "판례 내용이 없습니다." }}
+                        {% if item.content and item.content|length > 300 %}...{% endif %}
+                    </p>
+                </div>
+
+                {% if item.keywords %}
+                <div class="mt-4 pt-4 border-t border-gray-100">
+                    <div class="flex flex-wrap gap-2">
+                        {% for keyword in item.keywords[:5] %}
+                        <span class="inline-flex items-center px-2 py-1 rounded-md text-xs font-medium bg-blue-100 text-blue-800">
+                            {{ keyword }}
+                        </span>
+                        {% endfor %}
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% else %}
+    <!-- 검색 결과가 없는 경우 -->
+    <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-8 text-center">
+        <svg class="w-12 h-12 text-yellow-400 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.172 16.172a4 4 0 015.656 0M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+        </svg>
+        <h3 class="text-lg font-medium text-yellow-800 mb-2">검색 결과가 없습니다</h3>
+        <p class="text-yellow-700 mb-4">
+            입력하신 조건과 일치하는 유사 판례를 찾을 수 없습니다.
+            검색 조건을 다르게 설정해보시거나, 더 일반적인 키워드로 다시 시도해보세요.
+        </p>
+        <a href="/analysis/precedent" class="inline-flex items-center px-4 py-2 bg-yellow-600 text-white rounded-lg hover:bg-yellow-700">
+            새로운 검색하기
+        </a>
+    </div>
+    {% endif %}
+
+    {% elif analysis.status == 'processing' %}
+    <!-- 진행중 상태 -->
+    <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-8 text-center">
+        <div class="animate-spin w-12 h-12 border-4 border-yellow-200 border-t-yellow-600 rounded-full mx-auto mb-4"></div>
+        <h3 class="text-lg font-medium text-yellow-800 mb-2">판례 검색 진행중</h3>
+        <p class="text-yellow-700">
+            유사 판례 검색을 수행하고 있습니다. 잠시만 기다려주세요.
+        </p>
+    </div>
+
+    {% else %}
+    <!-- 기본 상태 또는 실패 -->
+    <div class="bg-red-50 border border-red-200 rounded-lg p-8 text-center">
+        <svg class="w-12 h-12 text-red-400 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+        </svg>
+        <h3 class="text-lg font-medium text-red-800 mb-2">검색에 문제가 발생했습니다</h3>
+        <p class="text-red-700 mb-4">
+            판례 검색 처리 중 오류가 발생했습니다. 다시 시도해주세요.
+        </p>
+        <a href="/analysis/precedent" class="bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700">
+            다시 시도하기
+        </a>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

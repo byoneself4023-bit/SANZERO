@@ -1,0 +1,437 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}SANZERO - 산업재해 보상 서비스{% endblock %}</title>
+
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <!-- Alpine.js - HTMX보다 먼저 로드 -->
+    <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
+
+    <!-- HTMX -->
+    <script src="https://unpkg.com/htmx.org@1.9.6"></script>
+
+    <!-- Chart.js with fallback CDN -->
+    <script>
+        // Chart.js 백업 로딩 시스템
+        function loadChartJS() {
+            return new Promise((resolve, reject) => {
+                const script = document.createElement('script');
+                script.src = 'https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.js';
+                script.onload = () => {
+                    console.log('✅ Chart.js loaded from cloudflare CDN');
+                    resolve();
+                };
+                script.onerror = () => {
+                    console.warn('⚠️ Primary CDN failed, trying backup...');
+                    // 백업 CDN 시도
+                    const backupScript = document.createElement('script');
+                    backupScript.src = 'https://unpkg.com/chart.js@4.4.0/dist/chart.umd.js';
+                    backupScript.onload = () => {
+                        console.log('✅ Chart.js loaded from backup CDN');
+                        resolve();
+                    };
+                    backupScript.onerror = () => {
+                        console.error('❌ All Chart.js CDNs failed');
+                        reject();
+                    };
+                    document.head.appendChild(backupScript);
+                };
+                document.head.appendChild(script);
+            });
+        }
+
+        // 차트가 필요한 페이지에서만 로딩 (자동 로딩 제거)
+        window.loadChartJSIfNeeded = () => {
+            if (!window.Chart && !window.chartJSLoading) {
+                window.chartJSLoading = true;
+                return loadChartJS().catch(() => {
+                    console.warn('❌ Chart.js loading failed, fallback visualization will be used');
+                    window.chartJSFailed = true;
+                });
+            }
+            return Promise.resolve();
+        };
+    </script>
+
+
+    <!-- Tailwind 커스텀 설정 -->
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: {
+                            50: '#eff6ff',
+                            500: '#3b82f6',
+                            600: '#2563eb',
+                            700: '#1d4ed8',
+                        },
+                        success: {
+                            50: '#f0fdf4',
+                            500: '#22c55e',
+                            600: '#16a34a',
+                        },
+                        warning: {
+                            50: '#fffbeb',
+                            500: '#f59e0b',
+                            600: '#d97706',
+                        },
+                        danger: {
+                            50: '#fef2f2',
+                            500: '#ef4444',
+                            600: '#dc2626',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+
+    <!-- 추가 CSS -->
+    <style>
+        /* Alpine.js x-cloak - Alpine 로드 전에 먼저 정의 */
+        [x-cloak] { display: none !important; }
+
+        /* 드롭다운 메뉴 기본 숨김 - Alpine 초기화 전까지 */
+        div[x-show="open"]:not([style*="display: block"]) {
+            display: none;
+        }
+
+        /* Select 및 옵션 스타일 개선 - 더 강력한 스타일링 */
+        select {
+            font-size: 0.875rem !important; /* 14px */
+            line-height: 1.5 !important;
+        }
+
+        select option {
+            font-size: 0.875rem !important; /* 14px - 기본 텍스트 크기와 동일 */
+            padding: 8px 12px !important;
+            line-height: 1.4 !important;
+            font-weight: normal !important;
+            color: #374151 !important; /* gray-700 */
+            background-color: white !important;
+        }
+
+        /* 모바일 및 다양한 브라우저 대응 */
+        @media (max-width: 768px) {
+            select option {
+                font-size: 0.875rem !important;
+                padding: 6px 10px !important;
+            }
+        }
+
+        /* Firefox 전용 */
+        @-moz-document url-prefix() {
+            select option {
+                font-size: 0.875rem !important;
+                padding: 4px 8px !important;
+            }
+        }
+
+        .loading {
+            opacity: 0.6;
+            pointer-events: none;
+        }
+
+        .htmx-indicator {
+            opacity: 0;
+            transition: opacity 200ms ease-in;
+        }
+
+        .htmx-request .htmx-indicator {
+            opacity: 1;
+        }
+
+        .htmx-request.loading {
+            opacity: 0.6;
+        }
+
+        /* 애니메이션 */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .fade-in {
+            animation: fadeIn 0.3s ease-out;
+        }
+
+        /* Toast 스타일 */
+        .toast {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 1000;
+            max-width: 400px;
+            padding: 16px;
+            border-radius: 8px;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+            transform: translateX(100%);
+            transition: transform 0.3s ease-in-out;
+        }
+
+        .toast.show {
+            transform: translateX(0);
+        }
+
+        .toast.success {
+            background-color: #dcfce7;
+            border-left: 4px solid #22c55e;
+            color: #166534;
+        }
+
+        .toast.error {
+            background-color: #fef2f2;
+            border-left: 4px solid #ef4444;
+            color: #991b1b;
+        }
+
+        .toast.warning {
+            background-color: #fffbeb;
+            border-left: 4px solid #f59e0b;
+            color: #92400e;
+        }
+
+        .toast.info {
+            background-color: #eff6ff;
+            border-left: 4px solid #3b82f6;
+            color: #1e40af;
+        }
+
+        /* 깔끔한 자연스러운 레이아웃 시스템 */
+        body {
+            overflow-x: hidden; /* 가로 스크롤 방지 */
+            min-height: 100vh; /* 최소 화면 높이 유지 */
+            display: flex;
+            flex-direction: column;
+            font-size: 0.9rem; /* 전체적으로 살짝 작은 폰트 */
+        }
+
+        main {
+            flex: 1; /* 사용 가능한 공간 차지 */
+            min-height: 0; /* flex item의 기본 min-height 제거 */
+            padding: 1rem 0; /* 상하 여백 */
+        }
+
+        /* 헤더와 푸터 최적화 */
+        header {
+            flex-shrink: 0; /* 헤더 크기 고정 */
+            z-index: 10; /* 다른 요소 위에 표시 */
+        }
+
+        footer {
+            flex-shrink: 0; /* 푸터 크기 고정 */
+            z-index: 10; /* 다른 요소 위에 표시 */
+        }
+
+        /* 짧은 콘텐츠 페이지용 - 빈 공간 최소화 */
+        body.compact-layout main {
+            flex: 0; /* 콘텐츠 크기만큼만 */
+            padding-bottom: 2rem; /* 푸터와의 간격 */
+        }
+
+        /* 모바일 최적화 */
+        @media (max-width: 768px) {
+            body {
+                font-size: 0.875rem; /* 모바일에서 더 작은 폰트 */
+            }
+
+            main {
+                padding: 0.5rem 0; /* 모바일에서는 패딩 줄임 */
+            }
+        }
+
+        /* 큰 화면 최적화 */
+        @media (min-width: 1200px) {
+            body {
+                font-size: 1rem; /* 큰 화면에서는 기본 폰트 크기 */
+            }
+        }
+    </style>
+
+    {% block extra_head %}{% endblock %}
+</head>
+<body class="bg-gray-50 font-sans antialiased">
+    <!-- 로딩 인디케이터 -->
+    <div id="loading-indicator" class="htmx-indicator fixed top-4 left-1/2 transform -translate-x-1/2 z-50">
+        <div class="bg-primary-600 text-white px-4 py-2 rounded-lg shadow-lg flex items-center space-x-2">
+            <svg class="animate-spin h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+            </svg>
+            <span>처리 중...</span>
+        </div>
+    </div>
+
+    <!-- 헤더 -->
+    {% include "components/header.html" %}
+
+    <!-- 메인 컨텐츠 -->
+    <main class="pb-8 pt-4">
+        {% block content %}{% endblock %}
+    </main>
+
+    <!-- 푸터 -->
+    {% include "components/footer.html" %}
+
+    <!-- Toast 컨테이너 -->
+    <div id="toast-container" class="fixed top-4 right-4 z-50 space-y-2"></div>
+
+    <!-- HTMX 설정 및 공통 JavaScript -->
+    <script>
+        // Alpine.js 초기화 보장
+        document.addEventListener('alpine:init', function() {
+            // Alpine이 초기화될 때 모든 x-data 요소가 초기화되었는지 확인
+            console.log('Alpine initialized');
+        });
+
+        // DOMContentLoaded 후에도 Alpine 초기화 확인
+        document.addEventListener('DOMContentLoaded', function() {
+            // Alpine이 아직 로드되지 않았다면 기다림
+            function waitForAlpine() {
+                if (window.Alpine && window.Alpine.initTree) {
+                    // 모든 x-data 요소가 초기화되었는지 확인
+                    document.querySelectorAll('[x-data]').forEach(el => {
+                        if (!el.__x) {
+                            console.log('Initializing Alpine element:', el);
+                            window.Alpine.initTree(el);
+                        }
+                    });
+                } else {
+                    // Alpine이 아직 로드되지 않았으면 100ms 후 재시도
+                    setTimeout(waitForAlpine, 100);
+                }
+            }
+            waitForAlpine();
+        });
+
+        // CSRF 토큰 관리
+        function getCookie(name) {
+            let cookieValue = null;
+            if (document.cookie && document.cookie !== '') {
+                const cookies = document.cookie.split(';');
+                for (let i = 0; i < cookies.length; i++) {
+                    const cookie = cookies[i].trim();
+                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                        break;
+                    }
+                }
+            }
+            return cookieValue;
+        }
+
+        // HTMX 설정
+        document.addEventListener('DOMContentLoaded', function() {
+            // CSRF 토큰 자동 포함
+            document.body.addEventListener('htmx:configRequest', function(evt) {
+                const csrfToken = getCookie('csrf_token');
+                if (csrfToken) {
+                    evt.detail.headers['X-CSRFToken'] = csrfToken;
+                }
+            });
+
+            // 로딩 인디케이터
+            document.body.addEventListener('htmx:beforeRequest', function(evt) {
+                document.getElementById('loading-indicator').style.opacity = '1';
+            });
+
+            document.body.addEventListener('htmx:afterRequest', function(evt) {
+                document.getElementById('loading-indicator').style.opacity = '0';
+            });
+
+            // 에러 처리
+            document.body.addEventListener('htmx:responseError', function(evt) {
+                showToast('요청 처리 중 오류가 발생했습니다.', 'error');
+            });
+
+            // 성공 메시지 처리
+            document.body.addEventListener('htmx:afterSwap', function(evt) {
+                const response = evt.detail.xhr.response;
+                if (evt.detail.xhr.getResponseHeader('HX-Toast')) {
+                    const toastData = JSON.parse(evt.detail.xhr.getResponseHeader('HX-Toast'));
+                    showToast(toastData.message, toastData.type);
+                }
+
+                // Alpine.js 재초기화 (HTMX로 새로 로드된 요소 인식)
+                if (window.Alpine) {
+                    // Alpine의 initTree를 사용하여 새로운 요소 초기화
+                    const newElements = evt.detail.target.querySelectorAll('[x-data]');
+                    newElements.forEach(el => {
+                        if (!el.__x) {
+                            window.Alpine.initTree(el);
+                        }
+                    });
+                }
+            });
+        });
+
+        // Toast 메시지 표시
+        function showToast(message, type = 'info', duration = 5000) {
+            const container = document.getElementById('toast-container');
+            const toast = document.createElement('div');
+            toast.className = `toast ${type}`;
+            toast.innerHTML = `
+                <div class="flex items-center justify-between">
+                    <div class="flex items-center space-x-2">
+                        <div class="flex-shrink-0">
+                            ${getToastIcon(type)}
+                        </div>
+                        <div class="text-sm font-medium">${message}</div>
+                    </div>
+                    <button onclick="closeToast(this)" class="ml-4 text-gray-400 hover:text-gray-600">
+                        <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd"></path>
+                        </svg>
+                    </button>
+                </div>
+            `;
+
+            container.appendChild(toast);
+
+            // 애니메이션
+            setTimeout(() => toast.classList.add('show'), 100);
+
+            // 자동 제거
+            setTimeout(() => closeToast(toast.querySelector('button')), duration);
+        }
+
+        function getToastIcon(type) {
+            const icons = {
+                success: '<svg class="w-5 h-5 text-green-500" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path></svg>',
+                error: '<svg class="w-5 h-5 text-red-500" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"></path></svg>',
+                warning: '<svg class="w-5 h-5 text-yellow-500" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd"></path></svg>',
+                info: '<svg class="w-5 h-5 text-blue-500" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"></path></svg>'
+            };
+            return icons[type] || icons.info;
+        }
+
+        function closeToast(button) {
+            const toast = button.closest('.toast');
+            toast.classList.remove('show');
+            setTimeout(() => toast.remove(), 300);
+        }
+
+        // 폼 제출 처리
+        function handleFormSubmit(form) {
+            const submitBtn = form.querySelector('button[type="submit"]');
+            if (submitBtn) {
+                submitBtn.disabled = true;
+                submitBtn.classList.add('loading');
+
+                // 3초 후 자동으로 활성화 (타임아웃 방지)
+                setTimeout(() => {
+                    submitBtn.disabled = false;
+                    submitBtn.classList.remove('loading');
+                }, 3000);
+            }
+        }
+    </script>
+
+    {% block extra_scripts %}{% endblock %}
+</body>
+</html>
