@@ -76,9 +76,7 @@ if os.getenv("ENVIRONMENT") == "production":
 # 라우터 등록
 app.include_router(auth.router, prefix="/auth", tags=["Authentication"])
 
-# 관리자 라우터
-from app.routers import admin
-app.include_router(admin.router, prefix="/admin", tags=["Admin"])
+# 관리자 라우터 제거됨 (testuser 계정 사용으로 불필요)
 
 # 노무사 서비스 라우터
 from app.routers import lawyers
@@ -101,27 +99,12 @@ except ImportError as e:
 # 메인 페이지 라우트
 @app.get("/")
 async def root(request: Request):
-    """메인 대시보드 페이지"""
+    """메인 대시보드 페이지 - testuser 기반 단일 대시보드"""
     from app.utils.security import get_current_user
-    from app.services.admin_service import AdminService
 
     current_user = await get_current_user(request)
 
-    # 관리자인 경우 관리자 대시보드 표시
-    if current_user and current_user.get("user_type") == "admin":
-        # 대시보드 통계 조회 (4가지 핵심 AI 서비스 통계)
-        stats = await AdminService.get_dashboard_stats()
-
-        return templates.TemplateResponse(
-            "pages/admin/dashboard.html",
-            {
-                "request": request,
-                "current_user": current_user,
-                "stats": stats
-            }
-        )
-
-    # 일반 사용자는 일반 대시보드
+    # 통합 대시보드 (관리자 시스템 제거됨)
     return templates.TemplateResponse(
         "pages/dashboard.html",
         {

@@ -8,11 +8,10 @@ from typing import Optional, List, Dict, Any
 from pydantic import BaseModel, Field, EmailStr, field_validator
 from enum import Enum
 
-# Enum 정의
+# Enum 정의 (관리자 타입 제거됨)
 class UserType(str, Enum):
     GENERAL = "general"
     LAWYER = "lawyer"
-    ADMIN = "admin"
 
 class Gender(str, Enum):
     MALE = "male"
